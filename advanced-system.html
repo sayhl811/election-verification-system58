@@ -5,7 +5,650 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Расширенная система верификации выборов</title>
 <style>
-/* ... (CSS стили остаются без изменений) ... */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.container {
+    max-width: 1200px;
+    width: 100%;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+    overflow: hidden;
+    animation: fadeIn 0.5s ease-out;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.header {
+    background: linear-gradient(to right, #2c3e50, #4a6491);
+    color: white;
+    padding: 25px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+.header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+    background-size: 30px 30px;
+    animation: movePattern 20s linear infinite;
+}
+@keyframes movePattern {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(30px, 30px); }
+}
+.header h1 {
+    font-size: 28px;
+    margin-bottom: 10px;
+    font-weight: 600;
+    position: relative;
+    z-index: 1;
+}
+.header p {
+    font-size: 16px;
+    opacity: 0.9;
+    position: relative;
+    z-index: 1;
+}
+.user-panel {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.1);
+    padding: 8px 15px;
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+}
+.user-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #3498db;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+}
+.main-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    padding: 30px;
+}
+@media (max-width: 992px) {
+    .main-content {
+        grid-template-columns: 1fr;
+        padding: 20px;
+    }
+}
+.panel {
+    background: #ffffff;
+    border-radius: 15px;
+    padding: 25px;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.panel:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+.panel h2 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+    font-size: 20px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.video-container {
+    width: 100%;
+    height: 320px;
+    background: linear-gradient(45deg, #1a237e, #283593);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    position: relative;
+}
+.video-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-align: center;
+    padding: 20px;
+}
+.video-icon {
+    font-size: 60px;
+    margin-bottom: 15px;
+    animation: pulse 2s infinite;
+}
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.9; }
+}
+.video-feed {
+    display: none;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.controls {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 140px;
+    justify-content: center;
+}
+.btn-primary {
+    background: linear-gradient(to right, #3498db, #2980b9);
+    color: white;
+}
+.btn-success {
+    background: linear-gradient(to right, #27ae60, #219653);
+    color: white;
+}
+.btn-danger {
+    background: linear-gradient(to right, #e74c3c, #c0392b);
+    color: white;
+}
+.btn-warning {
+    background: linear-gradient(to right, #f39c12, #e67e22);
+    color: white;
+}
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    opacity: 0.95;
+}
+.btn:active {
+    transform: translateY(0);
+}
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+.status-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #95a5a6;
+    animation: none;
+}
+.status-dot.active {
+    background: #27ae60;
+    animation: pulse 1.5s infinite;
+}
+.alert {
+    padding: 18px;
+    margin: 15px 0;
+    border-radius: 10px;
+    font-weight: 600;
+    border-left: 5px solid;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: slideIn 0.3s ease-out;
+}
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+.alert-warning {
+    background: linear-gradient(to right, #fff9e6, #fff3cd);
+    border-color: #ffc107;
+    color: #856404;
+}
+.alert-info {
+    background: linear-gradient(to right, #e8f4f8, #d1ecf1);
+    border-color: #17a2b8;
+    color: #0c5460;
+}
+.alert-success {
+    background: linear-gradient(to right, #e8f8ef, #d4edda);
+    border-color: #28a745;
+    color: #155724;
+}
+.violation-list {
+    max-height: 350px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+.violation-list::-webkit-scrollbar {
+    width: 6px;
+}
+.violation-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+.violation-list::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+.violation-list::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+.violation-item {
+    background: white;
+    padding: 18px;
+    margin-bottom: 12px;
+    border-radius: 10px;
+    border-left: 5px solid;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    transition: transform 0.2s ease;
+    cursor: pointer;
+}
+.violation-item:hover {
+    transform: translateX(5px);
+}
+.violation-item.high-priority {
+    border-left-color: #e74c3c;
+    background: linear-gradient(to right, #fff5f5, #ffeaea);
+}
+.violation-item.medium-priority {
+    border-left-color: #f39c12;
+    background: linear-gradient(to right, #fff9e6, #fff3cd);
+}
+.violation-item.low-priority {
+    border-left-color: #3498db;
+    background: linear-gradient(to right, #f0f8ff, #e3f2fd);
+}
+.procedure-list {
+    display: grid;
+    gap: 12px;
+}
+.procedure-item {
+    background: white;
+    padding: 18px;
+    border-radius: 10px;
+    border-left: 5px solid #3498db;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.procedure-item:hover {
+    background: linear-gradient(to right, #e3f2fd, #f0f8ff);
+    transform: translateX(8px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+.voice-control {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin: 20px 0;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border: 1px solid #e9ecef;
+}
+.voice-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 24px;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+}
+.voice-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
+}
+.voice-btn.listening {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    animation: pulse 0.8s infinite;
+}
+.report-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 2px dashed #e9ecef;
+}
+textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 15px;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    resize: vertical;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+textarea:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+.login-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+}
+.login-form {
+    background: white;
+    padding: 40px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+.login-form h3 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #2c3e50;
+}
+.form-group {
+    margin-bottom: 20px;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #2c3e50;
+    font-weight: 600;
+}
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+.form-group input:focus {
+    outline: none;
+    border-color: #3498db;
+}
+.statistics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin: 20px 0;
+}
+.stat-item {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+}
+.stat-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+.stat-label {
+    font-size: 12px;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.footer {
+    background: #f8f9fa;
+    padding: 20px;
+    text-align: center;
+    color: #6c757d;
+    font-size: 14px;
+    border-top: 1px solid #e9ecef;
+}
+.nav-menu {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px 0;
+    padding: 0 30px;
+}
+.nav-btn {
+    padding: 10px 20px;
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.nav-btn:hover {
+    background: #e9ecef;
+}
+.nav-btn.active {
+    background: #3498db;
+    color: white;
+    border-color: #2980b9;
+}
+.settings-panel {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    z-index: 2000;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+.settings-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    z-index: 1999;
+}
+.settings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+.settings-header h3 {
+    color: #2c3e50;
+    font-size: 20px;
+    margin: 0;
+}
+.settings-group {
+    margin-bottom: 25px;
+}
+.settings-group h4 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-size: 16px;
+}
+.setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+.setting-item:last-child {
+    border-bottom: none;
+}
+.setting-label {
+    font-size: 14px;
+    color: #2c3e50;
+}
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 24px;
+}
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+input:checked + .slider {
+    background-color: #3498db;
+}
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+.select {
+    padding: 8px 12px;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    font-size: 14px;
+    min-width: 150px;
+}
+.settings-btn {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-top: 10px;
+}
+.settings-btn:hover {
+    background: #5a6268;
+}
+.close-btn {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+@media (max-width: 768px) {
+    .header h1 {
+        font-size: 22px;
+    }
+    .panel {
+        padding: 20px;
+    }
+    .controls {
+        flex-direction: column;
+    }
+    .btn {
+        width: 100%;
+    }
+    .statistics {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .nav-menu {
+        flex-wrap: wrap;
+        padding: 0 20px;
+    }
+    .nav-btn {
+        flex: 1;
+        min-width: 120px;
+        justify-content: center;
+    }
+}
+@media (max-width: 480px) {
+    body {
+        padding: 10px;
+    }
+    .header {
+        padding: 20px 15px;
+    }
+    .main-content {
+        padding: 15px;
+    }
+    .statistics {
+        grid-template-columns: 1fr;
+    }
+    .nav-btn {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+}
 </style>
 </head>
 <body>
@@ -13,7 +656,11 @@
     <!-- Шапка -->
     <div class="header">
         <div class="user-panel" id="userPanel">
-            <!-- Будет заполнено скриптом -->
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <button class="btn" onclick="showSettings()" style="background: #6c757d; color: white; padding: 6px 12px; font-size: 12px;">
+                    ⚙️ Настройки
+                </button>
+            </div>
         </div>
         <h1>🎯 Расширенная система верификации выборов</h1>
         <p>Полный функционал для общественных наблюдателей</p>
@@ -41,7 +688,7 @@
                         <h3 style="margin-bottom: 10px;">Система видеонаблюдения</h3>
                         <p>Для начала анализа нажмите "Запустить камеру"</p>
                     </div>
-                    <video class="video-feed" id="videoFeed" autoplay></video>
+                    <video class="video-feed" id="videoFeed" autoplay muted></video>
                 </div>
                 <div class="controls">
                     <button class="btn btn-success" onclick="startCamera()">
@@ -185,6 +832,129 @@
     </div>
 </div>
 
+<!-- Панель настроек -->
+<div class="settings-overlay" id="settingsOverlay" onclick="hideSettings()"></div>
+<div class="settings-panel" id="settingsPanel">
+    <div class="settings-header">
+        <h3>⚙️ Расширенные настройки</h3>
+        <button class="close-btn" onclick="hideSettings()">×</button>
+    </div>
+    
+    <div class="settings-group">
+        <h4>Видеонаблюдение</h4>
+        <div class="setting-item">
+            <span class="setting-label">Автозапуск камеры</span>
+            <label class="switch">
+                <input type="checkbox" id="autoCamera">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="setting-item">
+            <span class="setting-label">Качество видео</span>
+            <select class="select" id="videoQuality">
+                <option value="low">Низкое</option>
+                <option value="medium" selected>Среднее</option>
+                <option value="high">Высокое</option>
+            </select>
+        </div>
+        <div class="setting-item">
+            <span class="setting-label">Запись видео</span>
+            <label class="switch">
+                <input type="checkbox" id="videoRecording">
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+    
+    <div class="settings-group">
+        <h4>Система анализа</h4>
+        <div class="setting-item">
+            <span class="setting-label">Автоматический анализ</span>
+            <label class="switch">
+                <input type="checkbox" id="autoAnalysis" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="setting-item">
+            <span class="setting-label">Чувствительность детекции</span>
+            <select class="select" id="detectionSensitivity">
+                <option value="low">Низкая</option>
+                <option value="medium" selected>Средняя</option>
+                <option value="high">Высокая</option>
+            </select>
+        </div>
+        <div class="setting-item">
+            <span class="setting-label">Звуковые уведомления</span>
+            <label class="switch">
+                <input type="checkbox" id="soundNotifications" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+    
+    <div class="settings-group">
+        <h4>Безопасность</h4>
+        <div class="setting-item">
+            <span class="setting-label">Шифрование данных</span>
+            <label class="switch">
+                <input type="checkbox" id="dataEncryption" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="setting-item">
+            <span class="setting-label">Автологаут (минут)</span>
+            <select class="select" id="autoLogout">
+                <option value="15">15</option>
+                <option value="30" selected>30</option>
+                <option value="60">60</option>
+                <option value="0">Никогда</option>
+            </select>
+        </div>
+        <div class="setting-item">
+            <span class="setting-label">Резервное копирование</span>
+            <label class="switch">
+                <input type="checkbox" id="autoBackup" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+    
+    <div class="settings-group">
+        <h4>Интерфейс</h4>
+        <div class="setting-item">
+            <span class="setting-label">Темная тема</span>
+            <label class="switch">
+                <input type="checkbox" id="darkTheme">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="setting-item">
+            <span class="setting-label">Размер шрифта</span>
+            <select class="select" id="fontSize">
+                <option value="small">Маленький</option>
+                <option value="medium" selected>Средний</option>
+                <option value="large">Крупный</option>
+            </select>
+        </div>
+        <div class="setting-item">
+            <span class="setting-label">Анимации</span>
+            <label class="switch">
+                <input type="checkbox" id="animations" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+    
+    <div class="controls" style="margin-top: 30px;">
+        <button class="btn btn-success" onclick="saveSettings()" style="flex: 2;">
+            💾 Сохранить настройки
+        </button>
+        <button class="btn btn-warning" onclick="resetSettings()" style="flex: 1;">
+            🔄 Сбросить
+        </button>
+    </div>
+</div>
+
 <script>
 // === БАЗА ДАННЫХ ===
 const legalDatabase = {
@@ -260,7 +1030,21 @@ let systemState = {
     mediumPriorityCount: 0,
     lowPriorityCount: 0,
     reports: [],
-    currentUser: null
+    currentUser: null,
+    settings: {
+        autoCamera: false,
+        videoQuality: 'medium',
+        videoRecording: false,
+        autoAnalysis: true,
+        detectionSensitivity: 'medium',
+        soundNotifications: true,
+        dataEncryption: true,
+        autoLogout: '30',
+        autoBackup: true,
+        darkTheme: false,
+        fontSize: 'medium',
+        animations: true
+    }
 };
 
 let videoStream = null;
@@ -270,8 +1054,130 @@ document.addEventListener('DOMContentLoaded', function() {
     checkAuth();
     loadProcedures();
     loadSavedData();
+    loadSettings();
     updateStatistics();
+    
+    // Добавляем кнопку выхода
+    const userPanel = document.getElementById('userPanel');
+    const exitBtn = document.createElement('button');
+    exitBtn.className = 'btn';
+    exitBtn.style.cssText = 'background: #e74c3c; color: white; padding: 6px 12px; font-size: 12px; margin-left: 10px;';
+    exitBtn.innerHTML = '🚪 Выход';
+    exitBtn.onclick = logout;
+    userPanel.appendChild(exitBtn);
 });
+
+// === НАСТРОЙКИ ===
+function showSettings() {
+    document.getElementById('settingsPanel').style.display = 'block';
+    document.getElementById('settingsOverlay').style.display = 'block';
+    loadSettingsToForm();
+}
+
+function hideSettings() {
+    document.getElementById('settingsPanel').style.display = 'none';
+    document.getElementById('settingsOverlay').style.display = 'none';
+}
+
+function loadSettings() {
+    const savedSettings = localStorage.getItem('election_advanced_settings');
+    if (savedSettings) {
+        systemState.settings = JSON.parse(savedSettings);
+        applySettings();
+    }
+}
+
+function loadSettingsToForm() {
+    const settings = systemState.settings;
+    document.getElementById('autoCamera').checked = settings.autoCamera;
+    document.getElementById('videoQuality').value = settings.videoQuality;
+    document.getElementById('videoRecording').checked = settings.videoRecording;
+    document.getElementById('autoAnalysis').checked = settings.autoAnalysis;
+    document.getElementById('detectionSensitivity').value = settings.detectionSensitivity;
+    document.getElementById('soundNotifications').checked = settings.soundNotifications;
+    document.getElementById('dataEncryption').checked = settings.dataEncryption;
+    document.getElementById('autoLogout').value = settings.autoLogout;
+    document.getElementById('autoBackup').checked = settings.autoBackup;
+    document.getElementById('darkTheme').checked = settings.darkTheme;
+    document.getElementById('fontSize').value = settings.fontSize;
+    document.getElementById('animations').checked = settings.animations;
+}
+
+function saveSettings() {
+    systemState.settings = {
+        autoCamera: document.getElementById('autoCamera').checked,
+        videoQuality: document.getElementById('videoQuality').value,
+        videoRecording: document.getElementById('videoRecording').checked,
+        autoAnalysis: document.getElementById('autoAnalysis').checked,
+        detectionSensitivity: document.getElementById('detectionSensitivity').value,
+        soundNotifications: document.getElementById('soundNotifications').checked,
+        dataEncryption: document.getElementById('dataEncryption').checked,
+        autoLogout: document.getElementById('autoLogout').value,
+        autoBackup: document.getElementById('autoBackup').checked,
+        darkTheme: document.getElementById('darkTheme').checked,
+        fontSize: document.getElementById('fontSize').value,
+        animations: document.getElementById('animations').checked
+    };
+    
+    localStorage.setItem('election_advanced_settings', JSON.stringify(systemState.settings));
+    applySettings();
+    hideSettings();
+    showAlert('Настройки сохранены', 'success');
+}
+
+function resetSettings() {
+    if (confirm('Сбросить все настройки к значениям по умолчанию?')) {
+        systemState.settings = {
+            autoCamera: false,
+            videoQuality: 'medium',
+            videoRecording: false,
+            autoAnalysis: true,
+            detectionSensitivity: 'medium',
+            soundNotifications: true,
+            dataEncryption: true,
+            autoLogout: '30',
+            autoBackup: true,
+            darkTheme: false,
+            fontSize: 'medium',
+            animations: true
+        };
+        
+        loadSettingsToForm();
+        showAlert('Настройки сброшены', 'info');
+    }
+}
+
+function applySettings() {
+    const settings = systemState.settings;
+    
+    // Применяем тему
+    if (settings.darkTheme) {
+        document.body.style.backgroundColor = '#1a1a2e';
+        document.querySelector('.container').style.backgroundColor = '#16213e';
+        document.querySelector('.container').style.color = '#fff';
+    } else {
+        document.body.style.backgroundColor = '';
+        document.querySelector('.container').style.backgroundColor = '';
+        document.querySelector('.container').style.color = '';
+    }
+    
+    // Применяем размер шрифта
+    const sizes = { small: '12px', medium: '14px', large: '16px' };
+    document.body.style.fontSize = sizes[settings.fontSize];
+    
+    // Применяем анимации
+    if (!settings.animations) {
+        document.querySelectorAll('*').forEach(el => {
+            el.style.animation = 'none';
+            el.style.transition = 'none';
+        });
+    }
+    
+    // Автозапуск камеры
+    if (settings.autoCamera && !systemState.isCameraOn) {
+        setTimeout(startCamera, 1000);
+    }
+}
 
 // === АВТОРИЗАЦИЯ ===
 function checkAuth() {
@@ -313,6 +1219,16 @@ function login() {
     }
 }
 
+function logout() {
+    if (confirm('Вы уверены, что хотите выйти?')) {
+        localStorage.removeItem('election_advanced_user');
+        systemState.currentUser = null;
+        document.getElementById('userPanel').innerHTML = '';
+        document.getElementById('loginModal').style.display = 'flex';
+        showAlert('Вы вышли из системы', 'info');
+    }
+}
+
 function demoMode() {
     systemState.currentUser = {
         username: 'demo',
@@ -343,14 +1259,17 @@ function showUserInfo() {
 // === ФУНКЦИИ ВИДЕОМОНИТОРИНГА ===
 async function startCamera() {
     try {
-        videoStream = await navigator.mediaDevices.getUserMedia({
+        const quality = systemState.settings.videoQuality;
+        const constraints = {
             video: {
-                width: { ideal: 1280 },
-                height: { ideal: 720 },
+                width: { ideal: quality === 'high' ? 1920 : quality === 'medium' ? 1280 : 640 },
+                height: { ideal: quality === 'high' ? 1080 : quality === 'medium' ? 720 : 480 },
                 facingMode: 'environment'
             },
             audio: false
-        });
+        };
+        
+        videoStream = await navigator.mediaDevices.getUserMedia(constraints);
         
         const videoFeed = document.getElementById('videoFeed');
         const placeholder = document.getElementById('videoPlaceholder');
@@ -361,6 +1280,11 @@ async function startCamera() {
         systemState.isCameraOn = true;
         updateStatus('Камера активна', 'active');
         showAlert('Камера активирована. Можете начать анализ.', 'success');
+        
+        // Автозапуск анализа если включено
+        if (systemState.settings.autoAnalysis) {
+            setTimeout(startVideoAnalysis, 2000);
+        }
     } catch (error) {
         console.error('Ошибка доступа к камере:', error);
         showAlert('Не удалось получить доступ к камере. Используется демо-режим.', 'warning');
@@ -413,14 +1337,45 @@ function startVideoAnalysis() {
 function simulateViolationDetection() {
     if (!systemState.isActive) return;
     
-    if (Math.random() > 0.7) {
+    const sensitivity = systemState.settings.detectionSensitivity;
+    const probability = sensitivity === 'high' ? 0.8 : sensitivity === 'medium' ? 0.6 : 0.4;
+    
+    if (Math.random() > (1 - probability)) {
         const violations = Object.keys(legalDatabase.violations);
         const randomViolation = violations[Math.floor(Math.random() * violations.length)];
         addViolation(randomViolation);
+        
+        // Звуковое уведомление
+        if (systemState.settings.soundNotifications) {
+            playNotificationSound();
+        }
     }
     
     if (systemState.isActive) {
-        setTimeout(simulateViolationDetection, 3000 + Math.random() * 4000);
+        const interval = sensitivity === 'high' ? 2000 : sensitivity === 'medium' ? 4000 : 6000;
+        setTimeout(simulateViolationDetection, interval + Math.random() * 2000);
+    }
+}
+
+function playNotificationSound() {
+    try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.value = 800;
+        oscillator.type = 'sine';
+        
+        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.5);
+    } catch (e) {
+        console.log('Звуковое уведомление не поддерживается');
     }
 }
 
@@ -704,8 +1659,13 @@ function showPanel(panelName) {
         btn.classList.remove('active');
     });
     
-    // Показываем активную панель навигации
-    event.target.classList.add('active');
+    // Находим кнопку которая была нажата
+    const buttons = document.querySelectorAll('.nav-btn');
+    buttons.forEach(btn => {
+        if (btn.textContent.includes(getPanelIcon(panelName))) {
+            btn.classList.add('active');
+        }
+    });
     
     // Скрываем все информационные панели
     const infoPanels = ['violationsPanel', 'voicePanel', 'proceduresPanel', 'reportsPanel'];
@@ -733,22 +1693,50 @@ function showPanel(panelName) {
     }
 }
 
+function getPanelIcon(panelName) {
+    const icons = {
+        'monitoring': '📹',
+        'violations': '🚨',
+        'voice': '🎤',
+        'procedures': '📋',
+        'reports': '📝'
+    };
+    return icons[panelName] || '📋';
+}
+
 // === СОХРАНЕНИЕ ДАННЫХ ===
 function saveViolation(violation) {
     const savedViolations = JSON.parse(localStorage.getItem('election_violations') || '[]');
     savedViolations.push(violation);
+    
+    // Шифрование данных если включено
+    if (systemState.settings.dataEncryption) {
+        violation.encrypted = true;
+        violation.timestamp = btoa(violation.timestamp);
+    }
+    
     localStorage.setItem('election_violations', JSON.stringify(savedViolations));
 }
 
 function saveReport(report) {
     const savedReports = JSON.parse(localStorage.getItem('election_reports') || '[]');
     savedReports.push(report);
+    
+    // Резервное копирование если включено
+    if (systemState.settings.autoBackup) {
+        localStorage.setItem('election_backup_' + Date.now(), JSON.stringify(report));
+    }
+    
     localStorage.setItem('election_reports', JSON.stringify(savedReports));
 }
 
 function loadSavedData() {
     const savedViolations = JSON.parse(localStorage.getItem('election_violations') || '[]');
     savedViolations.forEach(violation => {
+        // Расшифровка если данные были зашифрованы
+        if (violation.encrypted && violation.timestamp) {
+            violation.timestamp = atob(violation.timestamp);
+        }
         addViolation(violation.type);
     });
     
@@ -772,6 +1760,7 @@ function exportAllData() {
             mediumPriority: systemState.mediumPriorityCount,
             lowPriority: systemState.lowPriorityCount
         },
+        settings: systemState.settings,
         exportedAt: new Date().toISOString()
     };
     
@@ -850,6 +1839,12 @@ document.addEventListener('keydown', function(e) {
         exportAllData();
     }
     
+    // Ctrl+Shift+S - настройки
+    if (e.ctrlKey && e.shiftKey && e.key === 'S') {
+        e.preventDefault();
+        showSettings();
+    }
+    
     // Space - голосовое управление
     if (e.code === 'Space' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'INPUT') {
         e.preventDefault();
@@ -863,6 +1858,7 @@ document.addEventListener('keydown', function(e) {
             <strong>Горячие клавиши:</strong><br>
             • Ctrl+S - Сохранить черновик<br>
             • Ctrl+E - Экспорт всех данных<br>
+            • Ctrl+Shift+S - Настройки<br>
             • Пробел - Голосовое управление<br>
             • F1 - Эта справка<br><br>
             <strong>Голосовые команды:</strong><br>
@@ -873,6 +1869,25 @@ document.addEventListener('keydown', function(e) {
         `, 'info');
     }
 });
+
+// === АВТОЛОГАУТ ===
+let logoutTimer;
+function resetLogoutTimer() {
+    if (systemState.settings.autoLogout !== '0') {
+        clearTimeout(logoutTimer);
+        const minutes = parseInt(systemState.settings.autoLogout);
+        logoutTimer = setTimeout(() => {
+            if (confirm(`Сессия истекает через 1 минуту. Продолжить работу?`)) {
+                resetLogoutTimer();
+            } else {
+                logout();
+            }
+        }, (minutes - 1) * 60000);
+    }
+}
+
+document.addEventListener('mousemove', resetLogoutTimer);
+document.addEventListener('keypress', resetLogoutTimer);
 
 // === ЗАКРЫТИЕ СЕССИИ ===
 window.addEventListener('beforeunload', function(e) {
@@ -885,6 +1900,7 @@ window.addEventListener('beforeunload', function(e) {
 
 // === ИНИЦИАЛИЗАЦИЯ ЗАВЕРШЕНА ===
 console.log('Расширенная система верификации готова к работе');
+resetLogoutTimer();
 </script>
 </body>
 </html>
