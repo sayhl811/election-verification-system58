@@ -38,6 +38,7 @@
         h1 {
             color: #1a237e;
             margin-bottom: 10px;
+            font-size: 28px;
         }
         
         .description {
@@ -73,6 +74,13 @@
         .btn-demo {
             background: #f57c00;
             color: white;
+        }
+        
+        .btn-advanced {
+            background: linear-gradient(to right, #9c27b0, #673ab7);
+            color: white;
+            margin-top: 20px !important;
+            border: 2px solid #673ab7;
         }
         
         .btn:hover {
@@ -140,6 +148,35 @@
             border: 1px solid #ddd;
             border-radius: 8px;
             font-size: 16px;
+        }
+        
+        /* Панели пользователей */
+        .user-panel {
+            background: linear-gradient(135deg, #1a237e, #311b92);
+            border-radius: 15px;
+            padding: 25px;
+            color: white;
+            margin-top: 20px;
+        }
+        
+        .user-panel h2 {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-features {
+            list-style: none;
+            margin: 15px 0;
+        }
+        
+        .user-features li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
     </style>
 </head>
@@ -220,17 +257,22 @@
             <p class="description">Добро пожаловать, Администратор!</p>
         </div>
         
-        <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
-            <h3>Доступные функции:</h3>
-            <ul style="margin: 15px 0; padding-left: 20px;">
-                <li>Управление пользователями</li>
-                <li>Просмотр всех нарушений</li>
-                <li>Анализ отчетов</li>
-                <li>Системные настройки</li>
+        <div class="user-panel">
+            <h2>🌟 Ваш доступ:</h2>
+            <ul class="user-features">
+                <li>✅ Полный контроль над системой</li>
+                <li>✅ Управление всеми пользователями</li>
+                <li>✅ Просмотр всех нарушений</li>
+                <li>✅ Доступ к статистике и отчетам</li>
+                <li>✅ Настройка системы</li>
             </ul>
         </div>
         
-        <button class="btn btn-login" onclick="logout()">
+        <button class="btn btn-login" onclick="openAdvancedSystem()">
+            🚀 Перейти в расширенную систему
+        </button>
+        
+        <button class="btn" onclick="logout()" style="background: #666; color: white; margin-top: 10px;">
             ← Выйти из системы
         </button>
     </div>
@@ -243,17 +285,50 @@
             <p class="description">Добро пожаловать, Наблюдатель!</p>
         </div>
         
-        <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
-            <h3>Доступные функции:</h3>
-            <ul style="margin: 15px 0; padding-left: 20px;">
-                <li>Подача заявлений о нарушениях</li>
-                <li>Анализ ИИ</li>
-                <li>Просмотр статистики</li>
-                <li>Отчеты о проверках</li>
+        <div class="user-panel">
+            <h2>👁️ Ваш доступ:</h2>
+            <ul class="user-features">
+                <li>✅ Видеомониторинг участков</li>
+                <li>✅ Обнаружение нарушений в реальном времени</li>
+                <li>✅ Голосовые команды и подсказки</li>
+                <li>✅ База правовых процедур</li>
+                <li>✅ Создание отчетов об инцидентах</li>
+                <li>✅ Анализ ИИ нарушений</li>
             </ul>
         </div>
         
-        <button class="btn btn-login" onclick="logout()">
+        <button class="btn btn-login" onclick="openAdvancedSystem()">
+            🚀 Перейти в расширенную систему
+        </button>
+        
+        <button class="btn" onclick="logout()" style="background: #666; color: white; margin-top: 10px;">
+            ← Выйти из системы
+        </button>
+    </div>
+
+    <!-- Панель пользователя -->
+    <div class="container" id="userPanel" style="display: none;">
+        <div class="header">
+            <div style="font-size: 48px; color: #1a237e;">👤</div>
+            <h1>Панель Пользователя</h1>
+            <p class="description">Добро пожаловать, Пользователь!</p>
+        </div>
+        
+        <div class="user-panel">
+            <h2>👤 Ваш доступ:</h2>
+            <ul class="user-features">
+                <li>✅ Подача заявлений о нарушениях</li>
+                <li>✅ Отслеживание статуса заявлений</li>
+                <li>✅ Просмотр справочной информации</li>
+                <li>✅ Доступ к основным функциям</li>
+            </ul>
+        </div>
+        
+        <button class="btn btn-login" onclick="openAdvancedSystem()">
+            🚀 Перейти в расширенную систему
+        </button>
+        
+        <button class="btn" onclick="logout()" style="background: #666; color: white; margin-top: 10px;">
             ← Выйти из системы
         </button>
     </div>
@@ -265,24 +340,56 @@
                 name: 'Администратор',
                 password: '893612',
                 role: 'admin',
-                panel: 'adminPanel'
+                panel: 'adminPanel',
+                features: [
+                    '✅ Полный контроль над системой',
+                    '✅ Управление всеми пользователями',
+                    '✅ Просмотр всех нарушений',
+                    '✅ Доступ к статистике и отчетам',
+                    '✅ Настройка системы'
+                ]
             },
             'observer': {
                 name: 'Наблюдатель',
                 password: 'observer123',
                 role: 'observer',
-                panel: 'observerPanel'
+                panel: 'observerPanel',
+                features: [
+                    '✅ Видеомониторинг участков',
+                    '✅ Обнаружение нарушений в реальном времени',
+                    '✅ Голосовые команды и подсказки',
+                    '✅ База правовых процедур',
+                    '✅ Создание отчетов об инцидентах',
+                    '✅ Анализ ИИ нарушений'
+                ]
             },
             'user': {
                 name: 'Пользователь',
                 password: 'user123',
                 role: 'user',
-                panel: 'observerPanel' // У пользователя та же панель, что у наблюдателя
+                panel: 'userPanel',
+                features: [
+                    '✅ Подача заявлений о нарушениях',
+                    '✅ Отслеживание статуса заявлений',
+                    '✅ Просмотр справочной информации',
+                    '✅ Доступ к основным функциям'
+                ]
             }
         };
 
+        let currentUser = null;
+
         // Инициализация
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('Система загружена');
+            
+            // Проверяем сохраненную сессию
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                showPanel(currentUser.panel);
+            }
+            
             // Назначаем обработчики кнопок
             document.getElementById('loginBtn').onclick = function() {
                 document.getElementById('loginModal').style.display = 'flex';
@@ -294,13 +401,15 @@
             
             document.getElementById('demoBtn').onclick = function() {
                 // Автоматический вход как наблюдатель в демо-режиме
-                showPanel('observerPanel');
+                loginUser('observer', 'observer123', true);
             };
             
             // Обработка формы входа
             document.getElementById('loginForm').onsubmit = function(e) {
                 e.preventDefault();
-                loginUser();
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                loginUser(username, password, false);
                 return false;
             };
             
@@ -313,16 +422,27 @@
         });
 
         // Функция входа
-        function loginUser() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            
+        function loginUser(username, password, isDemo = false) {
             if (users[username] && users[username].password === password) {
-                alert('✅ Вход выполнен! Добро пожаловать, ' + users[username].name + '!');
+                currentUser = {
+                    username: username,
+                    name: users[username].name,
+                    role: users[username].role,
+                    panel: users[username].panel,
+                    isDemo: isDemo
+                };
+                
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
                 closeModal('loginModal');
-                showPanel(users[username].panel);
+                showPanel(currentUser.panel);
+                
+                const message = isDemo ? 
+                    '🚀 Демо-режим активирован! Вы вошли как Наблюдатель.' :
+                    `✅ Вход выполнен! Добро пожаловать, ${currentUser.name}!`;
+                
+                showAlert(message, 'success');
             } else {
-                alert('❌ Неверный логин или пароль!');
+                showAlert('❌ Неверный логин или пароль!', 'warning');
             }
         }
 
@@ -332,9 +452,21 @@
             document.getElementById('mainScreen').style.display = 'none';
             document.getElementById('adminPanel').style.display = 'none';
             document.getElementById('observerPanel').style.display = 'none';
+            document.getElementById('userPanel').style.display = 'none';
+            document.getElementById('loginModal').style.display = 'none';
             
             // Показываем нужную панель
             document.getElementById(panelId).style.display = 'block';
+            
+            // Обновляем список функций
+            if (currentUser && users[currentUser.username]) {
+                const featuresList = document.querySelector(`#${panelId} .user-features`);
+                if (featuresList) {
+                    featuresList.innerHTML = users[currentUser.username].features
+                        .map(feature => `<li>${feature}</li>`)
+                        .join('');
+                }
+            }
         }
 
         // Закрыть модальное окно
@@ -346,42 +478,74 @@
 
         // Выход из системы
         function logout() {
+            currentUser = null;
+            localStorage.removeItem('currentUser');
+            
             // Скрываем все панели
             document.getElementById('adminPanel').style.display = 'none';
             document.getElementById('observerPanel').style.display = 'none';
+            document.getElementById('userPanel').style.display = 'none';
             
             // Показываем главный экран
             document.getElementById('mainScreen').style.display = 'block';
             
-            alert('Вы вышли из системы');
+            showAlert('Вы вышли из системы', 'info');
+        }
+
+        // Перейти в расширенную систему
+        function openAdvancedSystem() {
+            if (!currentUser) {
+                showAlert('Сначала войдите в систему!', 'warning');
+                return;
+            }
+            
+            if (confirm(`Перейти в расширенную систему с полным функционалом?\n\nВы войдете как: ${currentUser.name}\nРоль: ${currentUser.role}`)) {
+                // Сохраняем данные пользователя для расширенной системы
+                localStorage.setItem('election_advanced_user', JSON.stringify({
+                    username: currentUser.username,
+                    name: currentUser.name,
+                    role: currentUser.role,
+                    avatar: currentUser.role === 'admin' ? '👑' : currentUser.role === 'observer' ? '👁️' : '👤',
+                    loginTime: new Date().toISOString()
+                }));
+                
+                // Переходим на страницу расширенной системы
+                window.location.href = 'advanced-system.html';
+            }
+        }
+
+        // Показать уведомление
+        function showAlert(message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.innerHTML = message;
+            alertDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 1000;
+                max-width: 400px;
+                padding: 15px;
+                border-radius: 10px;
+                border-left: 5px solid;
+                font-weight: bold;
+                background: ${type === 'success' ? '#d4edda' : type === 'warning' ? '#fff3cd' : '#d1ecf1'};
+                border-color: ${type === 'success' ? '#28a745' : type === 'warning' ? '#ffc107' : '#17a2b8'};
+                color: ${type === 'success' ? '#155724' : type === 'warning' ? '#856404' : '#0c5460'};
+                animation: slideIn 0.3s ease-out;
+            `;
+            
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                document.body.removeChild(alertDiv);
+            }, 3000);
         }
 
         // Глобальные функции для onclick атрибутов
         window.closeModal = closeModal;
         window.logout = logout;
+        window.openAdvancedSystem = openAdvancedSystem;
     </script>
 </body>
 </html>
-// Добавьте эту функцию в основной скрипт index.html:
-
-function showAdvancedSystem() {
-    if (confirm('Перейти в расширенную систему с полным функционалом?')) {
-        window.location.href = 'advanced-system.html';
-    }
-}
-
-// И добавьте кнопку в интерфейс (в showAppInterface функцию):
-
-function showAppInterface() {
-    // ... существующий код ...
-    
-    // Добавьте эту кнопку в панель администратора/наблюдателя:
-    const advancedBtn = document.createElement('button');
-    advancedBtn.className = 'btn btn-warning';
-    advancedBtn.innerHTML = '🚀 Расширенная система';
-    advancedBtn.onclick = showAdvancedSystem;
-    advancedBtn.style.marginTop = '10px';
-    
-    // Добавьте кнопку в контейнер
-    document.querySelector('.container').appendChild(advancedBtn);
-}
