@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Расширенная система верификации выборов</title>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.container {
+    max-width: 1200px;
+    width: 100%;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+    overflow: hidden;
+    animation: fadeIn 0.5s ease-out;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.header {
+    background: linear-gradient(to right, #2c3e50, #4a6491);
+    color: white;
+    padding: 25px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+.header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+    background-size: 30px 30px;
+    animation: movePattern 20s linear infinite;
+}
+@keyframes movePattern {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(30px, 30px); }
+}
+.header h1 {
+    font-size: 28px;
+    margin-bottom: 10px;
+    font-weight: 600;
+    position: relative;
+    z-index: 1;
+}
+.header p {
+    font-size: 16px;
+    opacity: 0.9;
+    position: relative;
+    z-index: 1;
+}
+.user-panel {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.1);
+    padding: 8px 15px;
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+}
+.user-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #3498db;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+}
+.main-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    padding: 30px;
+}
+@media (max-width: 992px) {
+    .main-content {
+        grid-template-columns: 1fr;
+        padding: 20px;
+    }
+}
+.panel {
+    background: #ffffff;
+    border-radius: 15px;
+    padding: 25px;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.panel:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+.panel h2 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+    font-size: 20px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.video-container {
+    width: 100%;
+    height: 320px;
+    background: linear-gradient(45deg, #1a237e, #283593);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    position: relative;
+}
+.video-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-align: center;
+    padding: 20px;
+}
+.video-icon {
+    font-size: 60px;
+    margin-bottom: 15px;
+    animation: pulse 2s infinite;
+}
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.9; }
+}
+.video-feed {
+    display: none;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.controls {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 140px;
+    justify-content: center;
+}
+.btn-primary {
+    background: linear-gradient(to right, #3498db, #2980b9);
+    color: white;
+}
+.btn-success {
+    background: linear-gradient(to right, #27ae60, #219653);
+    color: white;
+}
+.btn-danger {
+    background: linear-gradient(to right, #e74c3c, #c0392b);
+    color: white;
+}
+.btn-warning {
+    background: linear-gradient(to right, #f39c12, #e67e22);
+    color: white;
+}
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    opacity: 0.95;
+}
+.btn:active {
+    transform: translateY(0);
+}
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+.status-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #95a5a6;
+    animation: none;
+}
+.status-dot.active {
+    background: #27ae60;
+    animation: pulse 1.5s infinite;
+}
+.alert {
+    padding: 18px;
+    margin: 15px 0;
+    border-radius: 10px;
+    font-weight: 600;
+    border-left: 5px solid;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: slideIn 0.3s ease-out;
+}
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+.alert-warning {
+    background: linear-gradient(to right, #fff9e6, #fff3cd);
+    border-color: #ffc107;
+    color: #856404;
+}
+.alert-info {
+    background: linear-gradient(to right, #e8f4f8, #d1ecf1);
+    border-color: #17a2b8;
+    color: #0c5460;
+}
+.alert-success {
+    background: linear-gradient(to right, #e8f8ef, #d4edda);
+    border-color: #28a745;
+    color: #155724;
+}
+.violation-list {
+    max-height: 350px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+.violation-list::-webkit-scrollbar {
+    width: 6px;
+}
+.violation-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+.violation-list::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+.violation-list::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+.violation-item {
+    background: white;
+    padding: 18px;
+    margin-bottom: 12px;
+    border-radius: 10px;
+    border-left: 5px solid;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    transition: transform 0.2s ease;
+    cursor: pointer;
+}
+.violation-item:hover {
+    transform: translateX(5px);
+}
+.violation-item.high-priority {
+    border-left-color: #e74c3c;
+    background: linear-gradient(to right, #fff5f5, #ffeaea);
+}
+.violation-item.medium-priority {
+    border-left-color: #f39c12;
+    background: linear-gradient(to right, #fff9e6, #fff3cd);
+}
+.violation-item.low-priority {
+    border-left-color: #3498db;
+    background: linear-gradient(to right, #f0f8ff, #e3f2fd);
+}
+.procedure-list {
+    display: grid;
+    gap: 12px;
+}
+.procedure-item {
+    background: white;
+    padding: 18px;
+    border-radius: 10px;
+    border-left: 5px solid #3498db;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.procedure-item:hover {
+    background: linear-gradient(to right, #e3f2fd, #f0f8ff);
+    transform: translateX(8px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+.voice-control {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin: 20px 0;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border: 1px solid #e9ecef;
+}
+.voice-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 24px;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+}
+.voice-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
+}
+.voice-btn.listening {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    animation: pulse 0.8s infinite;
+}
+.report-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 2px dashed #e9ecef;
+}
+textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 15px;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    resize: vertical;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+textarea:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+.login-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+}
+.login-form {
+    background: white;
+    padding: 40px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+.login-form h3 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #2c3e50;
+}
+.form-group {
+    margin-bottom: 20px;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #2c3e50;
+    font-weight: 600;
+}
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+.form-group input:focus {
+    outline: none;
+    border-color: #3498db;
+}
+.statistics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin: 20px 0;
+}
+.stat-item {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+}
+.stat-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+.stat-label {
+    font-size: 12px;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.footer {
+    background: #f8f9fa;
+    padding: 20px;
+    text-align: center;
+    color: #6c757d;
+    font-size: 14px;
+    border-top: 1px solid #e9ecef;
+}
+.nav-menu {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px 0;
+}
+.nav-btn {
+    padding: 10px 20px;
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.nav-btn:hover {
+    background: #e9ecef;
+}
+.nav-btn.active {
+    background: #3498db;
+    color: white;
+    border-color: #2980b9;
+}
+@media (max-width: 768px) {
+    .header h1 {
+        font-size: 22px;
+    }
+    .panel {
+        padding: 20px;
+    }
+    .controls {
+        flex-direction: column;
+    }
+    .btn {
+        width: 100%;
+    }
+    .statistics {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (max-width: 480px) {
+    body {
+        padding: 10px;
+    }
+    .header {
+        padding: 20px 15px;
+    }
+    .main-content {
+        padding: 15px;
+    }
+    .statistics {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+</head>
+<body>
+<div class="container">
+    <!-- Шапка -->
+    <div class="header">
+        <div class="user-panel" id="userPanel">
+            <!-- Будет заполнено скриптом -->
+        </div>
+        <h1>🎯 Расширенная система верификации выборов</h1>
+        <p>Полный функционал для общественных наблюдателей</p>
+    </div>
+
+    <!-- Навигация -->
+    <div class="nav-menu">
+        <button class="nav-btn active" onclick="showPanel('monitoring')">📹 Мониторинг</button>
+        <button class="nav-btn" onclick="showPanel('violations')">🚨 Нарушения</button>
+        <button class="nav-btn" onclick="showPanel('voice')">🎤 Голосовые команды</button>
+        <button class="nav-btn" onclick="showPanel('procedures')">📋 Процедуры</button>
+        <button class="nav-btn" onclick="showPanel('reports')">📝 Отчеты</button>
+    </div>
+
+    <!-- Основной контент -->
+    <div class="main-content">
+        <!-- Левая колонка - Панели мониторинга -->
+        <div class="left-column" id="monitoringPanel">
+            <!-- Видеомониторинг -->
+            <div class="panel">
+                <h2>📹 Видеомониторинг</h2>
+                <div class="video-container">
+                    <div class="video-placeholder" id="videoPlaceholder">
+                        <div class="video-icon">📷</div>
+                        <h3 style="margin-bottom: 10px;">Система видеонаблюдения</h3>
+                        <p>Для начала анализа нажмите "Запустить камеру"</p>
+                    </div>
+                    <video class="video-feed" id="videoFeed" autoplay></video>
+                </div>
+                <div class="controls">
+                    <button class="btn btn-success" onclick="startCamera()">
+                        📷 Запустить камеру
+                    </button>
+                    <button class="btn btn-primary" onclick="startVideoAnalysis()">
+                        🔍 Анализировать
+                    </button>
+                    <button class="btn btn-danger" onclick="stopCamera()">
+                        ⏹️ Остановить
+                    </button>
+                </div>
+                <div class="status-indicator">
+                    <div class="status-dot" id="statusDot"></div>
+                    <span id="statusText">Система неактивна</span>
+                </div>
+                <div class="alert alert-info" id="systemAlert">
+                    <div class="status-dot"></div>
+                    <div>
+                        <strong>Статус:</strong> Ожидание активации<br>
+                        <small>Обнаружено нарушений: <span id="violationCount">0</span></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Правая колонка - Информационные панели -->
+        <div class="right-column" id="infoPanel">
+            <!-- Обнаруженные нарушения -->
+            <div class="panel" id="violationsPanel">
+                <h2>🚨 Обнаруженные нарушения</h2>
+                <div class="statistics">
+                    <div class="stat-item">
+                        <div class="stat-value" id="highCount">0</div>
+                        <div class="stat-label">Высокий приоритет</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="mediumCount">0</div>
+                        <div class="stat-label">Средний приоритет</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="lowCount">0</div>
+                        <div class="stat-label">Низкий приоритет</div>
+                    </div>
+                </div>
+                <div class="violation-list" id="violationList">
+                    <!-- Нарушения будут добавляться здесь -->
+                </div>
+            </div>
+
+            <!-- Голосовые команды -->
+            <div class="panel" id="voicePanel" style="display: none;">
+                <h2>🎤 Голосовые команды</h2>
+                <div class="voice-control">
+                    <div class="voice-btn" id="voiceBtn" onclick="toggleVoiceRecognition()">
+                        🎤
+                    </div>
+                    <div>
+                        <strong id="voiceStatus">Готов к распознаванию</strong><br>
+                        <small>Нажмите микрофон для голосовой команды</small>
+                    </div>
+                </div>
+                <div id="voiceResponse" class="alert alert-info" style="display: none;">
+                    🔊 <strong>Ответ системы:</strong> <span id="responseText">...</span>
+                </div>
+                <div class="alert alert-warning">
+                    💡 <strong>Примеры команд:</strong><br>
+                    "Как проверить документы?"<br>
+                    "Процедура подсчета голосов"<br>
+                    "Что делать при нарушении?"
+                </div>
+            </div>
+
+            <!-- Правовые процедуры -->
+            <div class="panel" id="proceduresPanel" style="display: none;">
+                <h2>📋 Правовые процедуры</h2>
+                <div class="procedure-list" id="procedureList">
+                    <!-- Процедуры добавляются динамически -->
+                </div>
+            </div>
+
+            <!-- Создание отчета -->
+            <div class="panel" id="reportsPanel" style="display: none;">
+                <h2>📝 Создание отчета</h2>
+                <div class="report-section">
+                    <div class="form-group">
+                        <label for="uikNumber">Номер УИК:</label>
+                        <input type="text" id="uikNumber" placeholder="Например: УИК №1234">
+                    </div>
+                    <textarea id="incidentReport" placeholder="Опишите инцидент подробно..."></textarea>
+                    <div class="controls" style="margin-top: 15px;">
+                        <button class="btn btn-success" onclick="generateReport()">
+                            📄 Сформировать отчет
+                        </button>
+                        <button class="btn btn-warning" onclick="saveDraft()">
+                            💾 Сохранить черновик
+                        </button>
+                    </div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <button class="btn btn-primary" onclick="exportAllData()" style="width: 100%;">
+                        📤 Экспорт всех данных
+                    </button>
+                    <button class="btn btn-danger" onclick="clearAllData()" style="width: 100%; margin-top: 10px;">
+                        🗑️ Очистить все данные
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Подвал -->
+    <div class="footer">
+        <p>© 2024 Система верификации избирательных участков</p>
+        <button class="btn" onclick="goBackToMain()" style="margin-top: 10px; background: #6c757d; color: white;">
+            ← Вернуться в главное меню
+        </button>
+    </div>
+</div>
+
+<!-- Модальное окно авторизации -->
+<div class="login-modal" id="loginModal" style="display: none;">
+    <div class="login-form">
+        <h3>🔐 Авторизация</h3>
+        <div class="form-group">
+            <label for="username">Логин:</label>
+            <input type="text" id="username" placeholder="observer">
+        </div>
+        <div class="form-group">
+            <label for="password">Пароль:</label>
+            <input type="password" id="password" placeholder="••••••••">
+        </div>
+        <div class="controls">
+            <button class="btn btn-success" onclick="login()" style="width: 100%;">
+                Войти в систему
+            </button>
+            <button class="btn btn-warning" onclick="demoMode()" style="width: 100%; margin-top: 10px;">
+                Демо-режим
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+// === БАЗА ДАННЫХ ===
+const legalDatabase = {
+    violations: {
+        'multiple_voting': {
+            description: 'Попытка голосования более одного раза',
+            action: 'Немедленно сообщить председателю УИК и правоохранительным органам',
+            reference: 'Статья 142 УК РФ',
+            priority: 'high'
+        },
+        'ballot_stuffing': {
+            description: 'Вброс бюллетеней в урну',
+            action: 'Зафиксировать на видео, составить акт, сообщить в вышестоящую комиссию',
+            reference: 'Статья 141 УК РФ',
+            priority: 'high'
+        },
+        'voter_intimidation': {
+            description: 'Давление на избирателей',
+            action: 'Пресечь действия, вызвать полицию, составить протокол',
+            reference: 'Статья 141 УК РФ',
+            priority: 'high'
+        },
+        'photo_violation': {
+            description: 'Фотосъемка в кабине для голосования',
+            action: 'Потребовать прекратить съемку, составить замечание',
+            reference: 'ФЗ-67, статья 7',
+            priority: 'medium'
+        },
+        'late_voting': {
+            description: 'Голосование после 20:00',
+            action: 'Зафиксировать время, проверить полномочия',
+            reference: 'ФЗ-67, статья 71',
+            priority: 'medium'
+        },
+        'improper_document': {
+            description: 'Отсутствие/несоответствие документа',
+            action: 'Отказать в выдаче бюллетеня, составить акт',
+            reference: 'ФЗ-67, статья 17',
+            priority: 'low'
+        }
+    },
+    procedures: [
+        {
+            id: 'voter_identification',
+            title: '🔍 Идентификация избирателя',
+            steps: ['Проверить паспорт гражданина РФ', 'Сверить данные со списком', 'Убедиться в наличии подписи']
+        },
+        {
+            id: 'ballot_issuance',
+            title: '📄 Выдача бюллетеней',
+            steps: ['Убедиться в правильности выдачи', 'Проверить наличие подписи члена комиссии', 'Зафиксировать время выдачи']
+        },
+        {
+            id: 'voting_process',
+            title: '🗳️ Процесс голосования',
+            steps: ['Проследить за опусканием бюллетеня', 'Убедиться в отсутствии фотосъемки', 'Контролировать тайну голосования']
+        },
+        {
+            id: 'counting_procedure',
+            title: '📊 Подсчет голосов',
+            steps: ['Наблюдать за вскрытием урн', 'Контролировать подсчет бюллетеней', 'Проверять правильность оформления протоколов']
+        }
+    ]
+};
+
+// === СОСТОЯНИЕ СИСТЕМЫ ===
+let systemState = {
+    isActive: false,
+    isCameraOn: false,
+    isListening: false,
+    violationCount: 0,
+    highPriorityCount: 0,
+    mediumPriorityCount: 0,
+    lowPriorityCount: 0,
+    reports: [],
+    currentUser: null
+};
+
+let videoStream = null;
+
+// === ИНИЦИАЛИЗАЦИЯ ===
+document.addEventListener('DOMContentLoaded', function() {
+    checkAuth();
+    loadProcedures();
+    loadSavedData();
+    updateStatistics();
+});
+
+// === АВТОРИЗАЦИЯ ===
+function checkAuth() {
+    const savedUser = localStorage.getItem('election_advanced_user');
+    if (savedUser) {
+        systemState.currentUser = JSON.parse(savedUser);
+        showUserInfo();
+    } else {
+        document.getElementById('loginModal').style.display = 'flex';
+    }
+}
+
+function login() {
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    
+    // Проверка учетных данных
+    const users = {
+        'admin58': {name: 'Администратор', password: '893612', role: 'admin', avatar: '👑'},
+        'observer': {name: 'Наблюдатель', password: 'observer123', role: 'observer', avatar: '👁️'},
+        'user': {name: 'Пользователь', password: 'user123', role: 'user', avatar: '👤'}
+    };
+    
+    if (users[username] && users[username].password === password) {
+        systemState.currentUser = {
+            username: username,
+            name: users[username].name,
+            role: users[username].role,
+            avatar: users[username].avatar,
+            loginTime: new Date().toISOString()
+        };
+        
+        localStorage.setItem('election_advanced_user', JSON.stringify(systemState.currentUser));
+        document.getElementById('loginModal').style.display = 'none';
+        showUserInfo();
+        showAlert(`Добро пожаловать, ${systemState.currentUser.name}!`, 'success');
+    } else {
+        showAlert('Неверные учетные данные. Используйте demo: observer / observer123', 'warning');
+    }
+}
+
+function demoMode() {
+    systemState.currentUser = {
+        username: 'demo',
+        name: 'Демо-пользователь',
+        role: 'observer',
+        avatar: '👁️',
+        loginTime: new Date().toISOString()
+    };
+    
+    localStorage.setItem('election_advanced_user', JSON.stringify(systemState.currentUser));
+    document.getElementById('loginModal').style.display = 'none';
+    showUserInfo();
+    showAlert('Включен демо-режим', 'info');
+}
+
+function showUserInfo() {
+    if (systemState.currentUser) {
+        document.getElementById('userPanel').innerHTML = `
+            <div class="user-avatar">${systemState.currentUser.avatar}</div>
+            <div>
+                <strong>${systemState.currentUser.name}</strong><br>
+                <small>${systemState.currentUser.role === 'admin' ? 'Администратор' : 'Наблюдатель'}</small>
+            </div>
+        `;
+    }
+}
+
+// === ФУНКЦИИ ВИДЕОМОНИТОРИНГА ===
+async function startCamera() {
+    try {
+        videoStream = await navigator.mediaDevices.getUserMedia({
+            video: {
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+                facingMode: 'environment'
+            },
+            audio: false
+        });
+        
+        const videoFeed = document.getElementById('videoFeed');
+        const placeholder = document.getElementById('videoPlaceholder');
+        videoFeed.srcObject = videoStream;
+        videoFeed.style.display = 'block';
+        placeholder.style.display = 'none';
+        
+        systemState.isCameraOn = true;
+        updateStatus('Камера активна', 'active');
+        showAlert('Камера активирована. Можете начать анализ.', 'success');
+    } catch (error) {
+        console.error('Ошибка доступа к камере:', error);
+        showAlert('Не удалось получить доступ к камере. Используется демо-режим.', 'warning');
+        simulateCamera();
+    }
+}
+
+function simulateCamera() {
+    const placeholder = document.getElementById('videoPlaceholder');
+    placeholder.innerHTML = `
+        <div class="video-icon">📹</div>
+        <h3>Демо-режим камеры</h3>
+        <p>Имитация видеопотока</p>
+        <small style="margin-top: 10px; opacity: 0.7;">Используется демонстрационный режим</small>
+    `;
+    systemState.isCameraOn = true;
+    updateStatus('Демо-режим камеры', 'active');
+}
+
+function stopCamera() {
+    if (videoStream) {
+        videoStream.getTracks().forEach(track => track.stop());
+        videoStream = null;
+    }
+    
+    const videoFeed = document.getElementById('videoFeed');
+    const placeholder = document.getElementById('videoPlaceholder');
+    videoFeed.style.display = 'none';
+    placeholder.style.display = 'flex';
+    
+    systemState.isCameraOn = false;
+    systemState.isActive = false;
+    updateStatus('Камера выключена', 'inactive');
+    showAlert('Камера отключена', 'info');
+}
+
+function startVideoAnalysis() {
+    if (!systemState.isCameraOn) {
+        showAlert('Сначала включите камеру!', 'warning');
+        return;
+    }
+    
+    systemState.isActive = true;
+    updateStatus('Анализ в реальном времени', 'active');
+    showAlert('Анализ видеопотока запущен. Нарушения будут фиксироваться автоматически.', 'success');
+    
+    simulateViolationDetection();
+}
+
+function simulateViolationDetection() {
+    if (!systemState.isActive) return;
+    
+    if (Math.random() > 0.7) {
+        const violations = Object.keys(legalDatabase.violations);
+        const randomViolation = violations[Math.floor(Math.random() * violations.length)];
+        addViolation(randomViolation);
+    }
+    
+    if (systemState.isActive) {
+        setTimeout(simulateViolationDetection, 3000 + Math.random() * 4000);
+    }
+}
+
+// === ОБРАБОТКА НАРУШЕНИЙ ===
+function addViolation(violationType) {
+    const violation = legalDatabase.violations[violationType];
+    if (!violation) return;
+    
+    systemState.violationCount++;
+    if (violation.priority === 'high') systemState.highPriorityCount++;
+    if (violation.priority === 'medium') systemState.mediumPriorityCount++;
+    if (violation.priority === 'low') systemState.lowPriorityCount++;
+    
+    updateStatistics();
+    
+    const violationList = document.getElementById('violationList');
+    const violationItem = document.createElement('div');
+    violationItem.className = `violation-item ${violation.priority}-priority`;
+    violationItem.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+            <strong style="font-size: 14px;">${violation.description}</strong>
+            <span style="font-size: 11px; background: ${violation.priority === 'high' ? '#e74c3c' : violation.priority === 'medium' ? '#f39c12' : '#3498db'}; color: white; padding: 2px 8px; border-radius: 10px;">
+                ${violation.priority === 'high' ? 'Высокий' : violation.priority === 'medium' ? 'Средний' : 'Низкий'}
+            </span>
+        </div>
+        <p style="font-size: 13px; margin-bottom: 5px; color: #666;">🚨 ${violation.action}</p>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+            <small style="font-size: 12px; color: #888;">📚 ${violation.reference}</small>
+            <small style="font-size: 11px; color: #999;">${new Date().toLocaleTimeString()}</small>
+        </div>
+    `;
+    
+    violationItem.onclick = () => {
+        showAlert(`Нарушение: ${violation.description}. Действие:        showAlert(`Нарушение: ${violation.description}. Действие: ${violation.action}`, 'warning');
+    };
+    
+    violationList.insertBefore(violationItem, violationList.firstChild);
+    
+    saveViolation({
+        type: violationType,
+        description: violation.description,
+        timestamp: new Date().toISOString(),
+        priority: violation.priority
+    });
+    
+    showAlert(`Обнаружено новое нарушение: ${violation.description}`, 'warning');
+}
+
+// === СТАТИСТИКА ===
+function updateStatistics() {
+    document.getElementById('violationCount').textContent = systemState.violationCount;
+    document.getElementById('highCount').textContent = systemState.highPriorityCount;
+    document.getElementById('mediumCount').textContent = systemState.mediumPriorityCount;
+    document.getElementById('lowCount').textContent = systemState.lowPriorityCount;
+}
+
+function updateStatus(text, type) {
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+    
+    statusText.textContent = text;
+    statusDot.className = 'status-dot';
+    
+    if (type === 'active') {
+        statusDot.classList.add('active');
+        document.getElementById('systemAlert').innerHTML = `
+            <div class="status-dot active"></div>
+            <div>
+                <strong>Статус:</strong> Система активна<br>
+                <small>Обнаружено нарушений: ${systemState.violationCount}</small>
+            </div>
+        `;
+        document.getElementById('systemAlert').className = 'alert alert-success';
+    } else {
+        document.getElementById('systemAlert').innerHTML = `
+            <div class="status-dot"></div>
+            <div>
+                <strong>Статус:</strong> Система неактивна<br>
+                <small>Обнаружено нарушений: ${systemState.violationCount}</small>
+            </div>
+        `;
+        document.getElementById('systemAlert').className = 'alert alert-info';
+    }
+}
+
+// === ПРАВОВЫЕ ПРОЦЕДУРЫ ===
+function loadProcedures() {
+    const procedureList = document.getElementById('procedureList');
+    procedureList.innerHTML = '';
+    
+    legalDatabase.procedures.forEach(procedure => {
+        const item = document.createElement('div');
+        item.className = 'procedure-item';
+        item.innerHTML = `
+            <div style="font-size: 20px;">${procedure.title.split(' ')[0]}</div>
+            <div style="flex: 1;">
+                <strong>${procedure.title.substring(2)}</strong>
+                <div style="font-size: 12px; color: #666; margin-top: 5px;">
+                    ${procedure.steps.length} шага
+                </div>
+            </div>
+        `;
+        item.onclick = () => showProcedureDetails(procedure);
+        procedureList.appendChild(item);
+    });
+}
+
+function showProcedureDetails(procedure) {
+    const stepsHtml = procedure.steps.map((step, index) =>
+        `<li style="margin-bottom: 8px;">${index + 1}. ${step}</li>`
+    ).join('');
+    
+    showAlert(`
+        <strong>${procedure.title}</strong><br><br>
+        <ol style="margin-left: 20px; margin-top: 10px;">
+            ${stepsHtml}
+        </ol>
+    `, 'info');
+}
+
+// === ГОЛОСОВОЕ УПРАВЛЕНИЕ ===
+function toggleVoiceRecognition() {
+    const voiceBtn = document.getElementById('voiceBtn');
+    const voiceStatus = document.getElementById('voiceStatus');
+    
+    if (!systemState.isListening) {
+        systemState.isListening = true;
+        voiceBtn.classList.add('listening');
+        voiceStatus.textContent = 'Слушаю... Говорите сейчас';
+        
+        setTimeout(() => {
+            processVoiceCommand();
+        }, 2000);
+    } else {
+        systemState.isListening = false;
+        voiceBtn.classList.remove('listening');
+        voiceStatus.textContent = 'Готов к распознаванию';
+    }
+}
+
+function processVoiceCommand() {
+    const commands = [
+        'как проверить документы избирателя',
+        'что делать при вбросе бюллетеней',
+        'процедура подсчета голосов',
+        'как составить акт о нарушении',
+        'права наблюдателя на участке',
+        'включи камеру',
+        'начни анализ',
+        'покажи статистику'
+    ];
+    
+    const randomCommand = commands[Math.floor(Math.random() * commands.length)];
+    const response = getVoiceResponse(randomCommand);
+    
+    document.getElementById('responseText').textContent = response;
+    document.getElementById('voiceResponse').style.display = 'flex';
+    
+    systemState.isListening = false;
+    document.getElementById('voiceBtn').classList.remove('listening');
+    document.getElementById('voiceStatus').textContent = 'Готов к распознаванию';
+    
+    // Выполняем команду если нужно
+    executeVoiceCommand(randomCommand);
+    
+    // Озвучивание ответа
+    if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(response);
+        utterance.lang = 'ru-RU';
+        utterance.rate = 1.0;
+        speechSynthesis.speak(utterance);
+    }
+}
+
+function getVoiceResponse(command) {
+    const responses = {
+        'как проверить документы избирателя': 'Проверьте паспорт на соответствие данным в списке избирателей. Убедитесь в наличии подписи и актуальности документа.',
+        'что делать при вбросе бюллетеней': 'Немедленно сообщите председателю УИК, зафиксируйте нарушение на видео и составьте акт. Вызовите правоохранительные органы.',
+        'процедура подсчета голосов': 'Наблюдайте за вскрытием урн, контролируйте подсчет каждого бюллетеня, проверяйте правильность заполнения протоколов.',
+        'как составить акт о нарушении': 'Укажите время, место, суть нарушения, данные нарушителя и свидетелей. Подпишите акт и передайте копию председателю УИК.',
+        'права наблюдателя на участке': 'Наблюдатель имеет право: присутствовать на участке, фиксировать нарушения, получать копии протоколов, обращаться в комиссии.',
+        'включи камеру': 'Запускаю камеру...',
+        'начни анализ': 'Начинаю анализ видеопотока...',
+        'покажи статистику': `Статистика: Всего нарушений - ${systemState.violationCount}, Высокий приоритет - ${systemState.highPriorityCount}`
+    };
+    
+    for (const [key, value] of Object.entries(responses)) {
+        if (command.toLowerCase().includes(key.split(' ')[0])) {
+            return value;
+        }
+    }
+    
+    return 'Пожалуйста, повторите команду или выберите процедуру из списка.';
+}
+
+function executeVoiceCommand(command) {
+    command = command.toLowerCase();
+    
+    if (command.includes('включи камеру') || command.includes('запусти камеру')) {
+        startCamera();
+    } else if (command.includes('начни анализ') || command.includes('запусти анализ')) {
+        startVideoAnalysis();
+    } else if (command.includes('останови камеру') || command.includes('выключи камеру')) {
+        stopCamera();
+    } else if (command.includes('статистика') || command.includes('статистику')) {
+        showAlert(`Статистика нарушений: Всего - ${systemState.violationCount}, Высокий приоритет - ${systemState.highPriorityCount}, Средний - ${systemState.mediumPriorityCount}, Низкий - ${systemState.lowPriorityCount}`, 'info');
+    }
+}
+
+// === СОЗДАНИЕ ОТЧЕТОВ ===
+function generateReport() {
+    const uikNumber = document.getElementById('uikNumber').value;
+    const incidentText = document.getElementById('incidentReport').value;
+    
+    if (!uikNumber || !incidentText.trim()) {
+        showAlert('Заполните номер УИК и описание инцидента!', 'warning');
+        return;
+    }
+    
+    const report = {
+        id: Date.now(),
+        uikNumber: uikNumber,
+        incident: incidentText,
+        timestamp: new Date().toISOString(),
+        violations: systemState.violationCount,
+        highPriority: systemState.highPriorityCount,
+        mediumPriority: systemState.mediumPriorityCount,
+        lowPriority: systemState.lowPriorityCount,
+        user: systemState.currentUser ? systemState.currentUser.name : 'Неизвестный пользователь'
+    };
+    
+    systemState.reports.push(report);
+    saveReport(report);
+    
+    showAlert(`
+        ✅ Отчет #${report.id} успешно сформирован<br><br>
+        <strong>УИК:</strong> ${uikNumber}<br>
+        <strong>Нарушений зафиксировано:</strong> ${systemState.violationCount}<br>
+        <strong>Пользователь:</strong> ${report.user}<br>
+        <strong>Время:</strong> ${new Date().toLocaleString()}<br><br>
+        <small>Отчет сохранен локально</small>
+    `, 'success');
+    
+    document.getElementById('incidentReport').value = '';
+    downloadReport(report);
+}
+
+function saveDraft() {
+    const uikNumber = document.getElementById('uikNumber').value;
+    const incidentText = document.getElementById('incidentReport').value;
+    
+    if (incidentText.trim()) {
+        const draft = {
+            uikNumber: uikNumber || 'Не указан',
+            incident: incidentText,
+            savedAt: new Date().toLocaleTimeString()
+        };
+        localStorage.setItem('election_draft', JSON.stringify(draft));
+        showAlert('Черновик сохранен', 'info');
+    } else {
+        showAlert('Нет текста для сохранения', 'warning');
+    }
+}
+
+function downloadReport(report) {
+    const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Отчет_УИК_${report.uikNumber}_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+// === НАВИГАЦИЯ ===
+function showPanel(panelName) {
+    // Обновляем активные кнопки навигации
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Показываем активную панель навигации
+    event.target.classList.add('active');
+    
+    // Скрываем все информационные панели
+    const infoPanels = ['violationsPanel', 'voicePanel', 'proceduresPanel', 'reportsPanel'];
+    infoPanels.forEach(panel => {
+        document.getElementById(panel).style.display = 'none';
+    });
+    
+    // Показываем выбранную панель
+    switch(panelName) {
+        case 'monitoring':
+            // Панель мониторинга уже видна
+            break;
+        case 'violations':
+            document.getElementById('violationsPanel').style.display = 'block';
+            break;
+        case 'voice':
+            document.getElementById('voicePanel').style.display = 'block';
+            break;
+        case 'procedures':
+            document.getElementById('proceduresPanel').style.display = 'block';
+            break;
+        case 'reports':
+            document.getElementById('reportsPanel').style.display = 'block';
+            break;
+    }
+}
+
+// === СОХРАНЕНИЕ ДАННЫХ ===
+function saveViolation(violation) {
+    const savedViolations = JSON.parse(localStorage.getItem('election_violations') || '[]');
+    savedViolations.push(violation);
+    localStorage.setItem('election_violations', JSON.stringify(savedViolations));
+}
+
+function saveReport(report) {
+    const savedReports = JSON.parse(localStorage.getItem('election_reports') || '[]');
+    savedReports.push(report);
+    localStorage.setItem('election_reports', JSON.stringify(savedReports));
+}
+
+function loadSavedData() {
+    const savedViolations = JSON.parse(localStorage.getItem('election_violations') || '[]');
+    savedViolations.forEach(violation => {
+        addViolation(violation.type);
+    });
+    
+    const draft = JSON.parse(localStorage.getItem('election_draft') || 'null');
+    if (draft) {
+        document.getElementById('uikNumber').value = draft.uikNumber;
+        document.getElementById('incidentReport').value = draft.incident;
+    }
+    
+    updateStatistics();
+}
+
+function exportAllData() {
+    const data = {
+        user: systemState.currentUser,
+        violations: JSON.parse(localStorage.getItem('election_violations') || '[]'),
+        reports: JSON.parse(localStorage.getItem('election_reports') || '[]'),
+        statistics: {
+            totalViolations: systemState.violationCount,
+            highPriority: systemState.highPriorityCount,
+            mediumPriority: systemState.mediumPriorityCount,
+            lowPriority: systemState.lowPriorityCount
+        },
+        exportedAt: new Date().toISOString()
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Данные_верификации_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showAlert('Все данные экспортированы в JSON файл', 'success');
+}
+
+function clearAllData() {
+    if (confirm('Вы уверены? Все данные о нарушениях и отчетах будут удалены.')) {
+        localStorage.removeItem('election_violations');
+        localStorage.removeItem('election_reports');
+        localStorage.removeItem('election_draft');
+        
+        systemState.violationCount = 0;
+        systemState.highPriorityCount = 0;
+        systemState.mediumPriorityCount = 0;
+        systemState.lowPriorityCount = 0;
+        
+        updateStatistics();
+        document.getElementById('violationList').innerHTML = '';
+        
+        showAlert('Все данные очищены', 'info');
+    }
+}
+
+// === ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ===
+function showAlert(message, type = 'info') {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type}`;
+    alertDiv.innerHTML = message;
+    alertDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        max-width: 400px;
+        animation: slideIn 0.3s ease-out;
+    `;
+    
+    document.body.appendChild(alertDiv);
+    
+    setTimeout(() => {
+        alertDiv.style.animation = 'slideIn 0.3s ease-out reverse';
+        setTimeout(() => {
+            document.body.removeChild(alertDiv);
+        }, 300);
+    }, 5000);
+}
+
+function goBackToMain() {
+    if (confirm('Вернуться в главное меню? Текущая сессия будет сохранена.')) {
+        window.location.href = 'index.html';
+    }
+}
+
+// === ГОРЯЧИЕ КЛАВИШИ ===
+document.addEventListener('keydown', function(e) {
+    // Ctrl+S - сохранить черновик
+    if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        saveDraft();
+    }
+    
+    // Ctrl+E - экспорт данных
+    if (e.ctrlKey && e.key === 'e') {
+        e.preventDefault();
+        exportAllData();
+    }
+    
+    // Space - голосовое управление
+    if (e.code === 'Space' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'INPUT') {
+        e.preventDefault();
+        toggleVoiceRecognition();
+    }
+    
+    // F1 - помощь
+    if (e.key === 'F1') {
+        e.preventDefault();
+        showAlert(`
+            <strong>Горячие клавиши:</strong><br>
+            • Ctrl+S - Сохранить черновик<br>
+            • Ctrl+E - Экспорт всех данных<br>
+            • Пробел - Голосовое управление<br>
+            • F1 - Эта справка<br><br>
+            <strong>Голосовые команды:</strong><br>
+            • "Включи камеру"<br>
+            • "Начни анализ"<br>
+            • "Покажи статистику"<br>
+            • "Как проверить документы?"
+        `, 'info');
+    }
+});
+
+// === ЗАКРЫТИЕ СЕССИИ ===
+window.addEventListener('beforeunload', function(e) {
+    if (systemState.violationCount > 0 || systemState.reports.length > 0) {
+        const message = 'У вас есть несохраненные данные. Вы уверены, что хотите уйти?';
+        e.returnValue = message;
+        return message;
+    }
+});
+
+// === ИНИЦИАЛИЗАЦИЯ ЗАВЕРШЕНА ===
+console.log('Расширенная система верификации готова к работе');
+</script>
+</body>
+</html>
