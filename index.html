@@ -1,2198 +1,364 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Система верификации избирательных участков</title>
-<style>
-* {
-margin: 0;
-padding: 0;
-box-sizing: border-box;
-font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-body {
-background: linear-gradient(135deg, #1a237e 0%, #311b92 100%);
-min-height: 100vh;
-padding: 20px;
-display: flex;
-justify-content: center;
-align-items: center;
-}
-.container {
-max-width: 1400px;
-width: 100%;
-background: white;
-border-radius: 20px;
-box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-overflow: hidden;
-animation: fadeIn 0.5s ease-out;
-}
-@keyframes fadeIn {
-from { opacity: 0; transform: translateY(20px); }
-to { opacity: 1; transform: translateY(0); }
-}
-/* Шапка */
-.header {
-background: linear-gradient(to right, #0d47a1, #1565c0);
-color: white;
-padding: 25px 30px;
-display: flex;
-justify-content: space-between;
-align-items: center;
-position: relative;
-overflow: hidden;
-}
-.header-info h1 {
-font-size: 28px;
-margin-bottom: 5px;
-font-weight: 600;
-}
-.header-info p {
-opacity: 0.9;
-font-size: 14px;
-}
-.user-panel {
-display: flex;
-align-items: center;
-gap: 20px;
-}
-.user-avatar {
-width: 50px;
-height: 50px;
-border-radius: 50%;
-background: linear-gradient(135deg, #4fc3f7, #0277bd);
-display: flex;
-align-items: center;
-justify-content: center;
-font-size: 20px;
-font-weight: bold;
-color: white;
-}
-.user-info {
-text-align: right;
-}
-.user-name {
-font-weight: 600;
-margin-bottom: 3px;
-}
-.user-role {
-font-size: 12px;
-opacity: 0.8;
-padding: 2px 10px;
-background: rgba(255,255,255,0.2);
-border-radius: 10px;
-display: inline-block;
-}
-/* Кнопки управления */
-.control-panel {
-display: flex;
-gap: 10px;
-margin-top: 10px;
-}
-.btn-back {
-background: rgba(255,255,255,0.2);
-color: white;
-border: 1px solid rgba(255,255,255,0.3);
-padding: 8px 16px;
-border-radius: 6px;
-cursor: pointer;
-font-size: 14px;
-transition: all 0.3s ease;
-display: flex;
-align-items: center;
-gap: 5px;
-}
-.btn-back:hover {
-background: rgba(255,255,255,0.3);
-transform: translateX(-3px);
-}
-.btn-logout {
-background: rgba(220, 53, 69, 0.2);
-color: #ff6b6b;
-border: 1px solid rgba(220, 53, 69, 0.3);
-padding: 8px 16px;
-border-radius: 6px;
-cursor: pointer;
-font-size: 14px;
-transition: all 0.3s ease;
-}
-.btn-logout:hover {
-background: rgba(220, 53, 69, 0.3);
-}
-/* Основной контент */
-.main-content {
-display: grid;
-grid-template-columns: 300px 1fr;
-min-height: 700px;
-}
-/* Панель навигации */
-.sidebar {
-background: #f8f9fa;
-border-right: 1px solid #e9ecef;
-padding: 25px 20px;
-display: block !important; /* Важно: всегда показывать */
-}
-.nav-menu {
-list-style: none;
-margin-bottom: 30px;
-}
-.nav-item {
-margin-bottom: 10px;
-}
-.nav-link {
-display: flex;
-align-items: center;
-gap: 12px;
-padding: 15px;
-border-radius: 12px;
-color: #2c3e50;
-text-decoration: none;
-transition: all 0.3s ease;
-font-weight: 500;
-cursor: pointer;
-}
-.nav-link:hover {
-background: #e3f2fd;
-color: #1565c0;
-transform: translateX(5px);
-}
-.nav-link.active {
-background: linear-gradient(to right, #1565c0, #0d47a1);
-color: white;
-box-shadow: 0 5px 15px rgba(21, 101, 192, 0.3);
-}
-.nav-icon {
-font-size: 20px;
-}
-.stats-widget {
-background: white;
-border-radius: 12px;
-padding: 20px;
-margin-top: 20px;
-box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-}
-.stats-widget h3 {
-font-size: 16px;
-margin-bottom: 15px;
-color: #2c3e50;
-}
-.stat-item {
-display: flex;
-justify-content: space-between;
-align-items: center;
-padding: 10px 0;
-border-bottom: 1px solid #f0f0f0;
-}
-.stat-value {
-font-weight: bold;
-color: #1565c0;
-}
-/* Контентная область */
-.content-area {
-padding: 30px;
-overflow-y: auto;
-max-height: 700px;
-display: block !important; /* Важно: всегда показывать */
-}
-.content-section {
-display: none;
-}
-.content-section.active {
-display: block;
-animation: slideIn 0.3s ease;
-}
-@keyframes slideIn {
-from { opacity: 0; transform: translateY(10px); }
-to { opacity: 1; transform: translateY(0); }
-}
-.section-header {
-display: flex;
-justify-content: space-between;
-align-items: center;
-margin-bottom: 25px;
-}
-.section-header h2 {
-font-size: 24px;
-color: #2c3e50;
-}
-/* Карточки */
-.cards-grid {
-display: grid;
-grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-gap: 20px;
-margin-bottom: 30px;
-}
-.card {
-background: white;
-border-radius: 15px;
-padding: 25px;
-box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-border: 1px solid #e9ecef;
-transition: all 0.3s ease;
-}
-.card:hover {
-transform: translateY(-5px);
-box-shadow: 0 15px 35px rgba(0,0,0,0.12);
-}
-.card-header {
-display: flex;
-align-items: center;
-gap: 15px;
-margin-bottom: 15px;
-}
-.card-icon {
-width: 50px;
-height: 50px;
-border-radius: 12px;
-background: linear-gradient(135deg, #4fc3f7, #0277bd);
-display: flex;
-align-items: center;
-justify-content: center;
-font-size: 24px;
-color: white;
-}
-.card-title {
-font-size: 18px;
-font-weight: 600;
-color: #2c3e50;
-}
-.card-content {
-color: #666;
-line-height: 1.6;
-margin-bottom: 20px;
-}
-/* Формы */
-.form-group {
-margin-bottom: 20px;
-}
-.form-group label {
-display: block;
-margin-bottom: 8px;
-font-weight: 600;
-color: #2c3e50;
-}
-.form-control {
-width: 100%;
-padding: 15px;
-border: 2px solid #e9ecef;
-border-radius: 10px;
-font-size: 16px;
-transition: all 0.3s ease;
-}
-.form-control:focus {
-outline: none;
-border-color: #1565c0;
-box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.1);
-}
-textarea.form-control {
-min-height: 150px;
-resize: vertical;
-font-family: inherit;
-}
-.file-upload {
-border: 2px dashed #1565c0;
-border-radius: 10px;
-padding: 30px;
-text-align: center;
-cursor: pointer;
-transition: all 0.3s ease;
-}
-.file-upload:hover {
-background: #f0f7ff;
-}
-.file-upload input {
-display: none;
-}
-.file-label {
-display: flex;
-flex-direction: column;
-align-items: center;
-gap: 10px;
-color: #1565c0;
-font-weight: 600;
-}
-.file-list {
-margin-top: 15px;
-}
-.file-item {
-display: flex;
-align-items: center;
-justify-content: space-between;
-padding: 10px;
-background: #f8f9fa;
-border-radius: 8px;
-margin-bottom: 5px;
-}
-/* Кнопки */
-.btn {
-padding: 15px 30px;
-border: none;
-border-radius: 10px;
-cursor: pointer;
-font-weight: 600;
-font-size: 16px;
-transition: all 0.3s ease;
-display: inline-flex;
-align-items: center;
-gap: 10px;
-}
-.btn-primary {
-background: linear-gradient(to right, #1565c0, #0d47a1);
-color: white;
-}
-.btn-success {
-background: linear-gradient(to right, #2e7d32, #1b5e20);
-color: white;
-}
-.btn-danger {
-background: linear-gradient(to right, #c62828, #b71c1c);
-color: white;
-}
-.btn-warning {
-background: linear-gradient(to right, #f57c00, #ef6c00);
-color: white;
-}
-.btn:hover {
-transform: translateY(-2px);
-box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-}
-.btn:active {
-transform: translateY(0);
-}
-/* Таблицы */
-.table-responsive {
-overflow-x: auto;
-border-radius: 10px;
-border: 1px solid #e9ecef;
-}
-table {
-width: 100%;
-border-collapse: collapse;
-}
-thead {
-background: linear-gradient(to right, #1565c0, #0d47a1);
-color: white;
-}
-th, td {
-padding: 15px;
-text-align: left;
-border-bottom: 1px solid #e9ecef;
-}
-tbody tr:hover {
-background: #f5f9ff;
-}
-.status-badge {
-padding: 5px 15px;
-border-radius: 20px;
-font-size: 12px;
-font-weight: 600;
-}
-.status-new {
-background: #e3f2fd;
-color: #1565c0;
-}
-.status-processing {
-background: #fff3e0;
-color: #f57c00;
-}
-.status-resolved {
-background: #e8f5e8;
-color: #2e7d32;
-}
-/* Алерты */
-.alert {
-padding: 20px;
-border-radius: 10px;
-margin-bottom: 20px;
-border-left: 5px solid;
-animation: slideIn 0.3s ease;
-}
-.alert-info {
-background: #e3f2fd;
-border-color: #1565c0;
-color: #0d47a1;
-}
-.alert-success {
-background: #e8f5e8;
-border-color: #2e7d32;
-color: #1b5e20;
-}
-.alert-warning {
-background: #fff3e0;
-border-color: #f57c00;
-color: #ef6c00;
-}
-.alert-danger {
-background: #ffebee;
-border-color: #c62828;
-color: #b71c1c;
-}
-/* Модальные окна */
-.modal {
-display: none;
-position: fixed;
-top: 0;
-left: 0;
-width: 100%;
-height: 100%;
-background: rgba(0,0,0,0.8);
-z-index: 1000;
-align-items: center;
-justify-content: center;
-animation: fadeIn 0.3s ease;
-}
-.modal.active {
-display: flex;
-}
-.modal-content {
-background: white;
-border-radius: 15px;
-width: 90%;
-max-width: 500px;
-padding: 30px;
-box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-}
-.modal-header {
-display: flex;
-justify-content: space-between;
-align-items: center;
-margin-bottom: 20px;
-}
-.modal-close {
-background: none;
-border: none;
-font-size: 24px;
-cursor: pointer;
-color: #666;
-}
-/* Анализ ИИ */
-.ai-analysis {
-background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
-border-radius: 15px;
-padding: 25px;
-margin-top: 20px;
-border: 1px solid #bbdefb;
-}
-.ai-header {
-display: flex;
-align-items: center;
-gap: 15px;
-margin-bottom: 20px;
-}
-.ai-icon {
-font-size: 32px;
-color: #1565c0;
-}
-.ai-result {
-background: white;
-border-radius: 10px;
-padding: 20px;
-margin-top: 15px;
-}
-.ai-score {
-font-size: 48px;
-font-weight: bold;
-color: #1565c0;
-text-align: center;
-margin: 20px 0;
-}
-.ai-feedback {
-color: #666;
-line-height: 1.6;
-}
-/* Экран авторизации */
-.auth-screen {
-display: none;
-flex-direction: column;
-align-items: center;
-justify-content: center;
-min-height: 500px;
-padding: 40px;
-text-align: center;
-}
-.auth-screen.active {
-display: flex;
-}
-.auth-icon {
-font-size: 80px;
-margin-bottom: 30px;
-color: #1565c0;
-}
-.auth-title {
-font-size: 32px;
-color: #2c3e50;
-margin-bottom: 20px;
-}
-.auth-subtitle {
-color: #666;
-margin-bottom: 40px;
-max-width: 600px;
-line-height: 1.6;
-}
-.auth-buttons {
-display: flex;
-gap: 20px;
-flex-wrap: wrap;
-justify-content: center;
-}
-/* Адаптивность */
-@media (max-width: 1200px) {
-.main-content {
-grid-template-columns: 250px 1fr;
-}
-}
-@media (max-width: 992px) {
-.main-content {
-grid-template-columns: 1fr;
-}
-.sidebar {
-display: none !important;
-}
-.header {
-flex-direction: column;
-gap: 15px;
-text-align: center;
-}
-.user-panel {
-flex-direction: column;
-text-align: center;
-}
-.user-info {
-text-align: center;
-}
-.control-panel {
-justify-content: center;
-}
-}
-@media (max-width: 768px) {
-.container {
-border-radius: 10px;
-}
-.content-area {
-padding: 20px;
-}
-.cards-grid {
-grid-template-columns: 1fr;
-}
-.btn {
-width: 100%;
-justify-content: center;
-}
-.auth-buttons {
-flex-direction: column;
-}
-.auth-buttons .btn {
-width: 100%;
-}
-}
-@media (max-width: 480px) {
-body {
-padding: 10px;
-}
-.header {
-padding: 20px 15px;
-}
-.header-info h1 {
-font-size: 22px;
-}
-.auth-title {
-font-size: 24px;
-}
-.auth-icon {
-font-size: 60px;
-}
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Система верификации выборов</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a237e 0%, #311b92 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: #1a237e;
+            margin-bottom: 10px;
+        }
+        
+        .description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            margin: 12px 0;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .btn-login {
+            background: #1a237e;
+            color: white;
+        }
+        
+        .btn-register {
+            background: #2e7d32;
+            color: white;
+        }
+        
+        .btn-demo {
+            background: #f57c00;
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .demo-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 30px;
+            border-left: 5px solid #1a237e;
+        }
+        
+        .demo-box h3 {
+            color: #1a237e;
+            margin-bottom: 15px;
+        }
+        
+        .user-account {
+            background: white;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        code {
+            background: #e3f2fd;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        
+        /* Модальные окна */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+    </style>
 </head>
 <body>
-<div class="container">
-<!-- Шапка (скрыта пока не авторизован) -->
-<div class="header" id="header" style="display: none;">
-<div class="header-info">
-<h1>🎯 Система верификации выборов</h1>
-<p>Цифровая платформа для общественного контроля</p>
-</div>
-<div class="user-panel" id="userPanel">
-<!-- Будет заполнено скриптом -->
-</div>
-</div>
-<!-- Основной контент -->
-<div class="main-content">
-<!-- Панель навигации (скрыта пока не авторизован) -->
-<nav class="sidebar" id="sidebar" style="display: none;">
-<ul class="nav-menu" id="navMenu">
-<!-- Будет заполнено скриптом -->
-</ul>
-<div class="stats-widget" id="statsWidget">
-<h3>📊 Статистика системы</h3>
-<div class="stat-item">
-<span>Всего нарушений:</span>
-<span class="stat-value" id="totalViolations">0</span>
-</div>
-<div class="stat-item">
-<span>Отчетов:</span>
-<span class="stat-value" id="totalReports">0</span>
-</div>
-<div class="stat-item">
-<span>Пользователей:</span>
-<span class="stat-value" id="totalUsers">0</span>
-</div>
-</div>
-</nav>
-<!-- Контентная область -->
-<main class="content-area">
-<!-- Экран авторизации (виден первым) -->
-<section id="authScreen" class="auth-screen active">
-<div class="auth-icon">🔐</div>
-<h1 class="auth-title">Система верификации выборов</h1>
-<p class="auth-subtitle">
-Цифровая платформа для общественного контроля за выборами.
-Подавайте заявления о нарушениях, анализируйте их с помощью ИИ
-и управляйте процессом наблюдения.
-</p>
-<div class="auth-buttons">
-<button class="btn btn-primary" onclick="showLoginModal()">
-🔐 Войти в систему
-</button>
-<button class="btn btn-success" onclick="showRegisterModal()">
-📝 Зарегистрироваться
-</button>
-<button class="btn btn-warning" onclick="enterDemoMode()">
-🚀 Демо-режим
-</button>
-</div>
-<div style="margin-top: 40px; color: #666; font-size: 14px;">
-<p><strong>Демо-доступ:</strong></p>
-<div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; margin-top: 10px;">
-<div style="background: #f8f9fa; padding: 10px 15px; border-radius: 8px;">
-👑 <strong>Админ:</strong><br>
-login: <code>admin58</code><br>
-pass: <code>893612</code>
-</div>
-<div style="background: #f8f9fa; padding: 10px 15px; border-radius: 8px;">
-👁️ <strong>Наблюдатель:</strong><br>
-login: <code>observer</code><br>
-pass: <code>observer123</code>
-</div>
-<div style="background: #f8f9fa; padding: 10px 15px; border-radius: 8px;">
-👤 <strong>Пользователь:</strong><br>
-login: <code>user</code><br>
-pass: <code>user123</code>
-</div>
-</div>
-</div>
-</section>
-<!-- Дашборд (скрыт пока не авторизован) -->
-<section id="dashboard" class="content-section">
-<div class="section-header">
-<h2>📊 Дашборд системы</h2>
-<div>
-<button class="btn-back" onclick="goBack()" style="margin-right: 10px;">
-← Назад
-</button>
-<button class="btn btn-primary" onclick="refreshDashboard()">
-🔄 Обновить
-</button>
-</div>
-</div>
-<div class="cards-grid">
-<div class="card">
-<div class="card-header">
-<div class="card-icon">📈</div>
-<h3 class="card-title">Активность за сегодня</h3>
-</div>
-<div class="card-content">
-<p id="todayActivity">Загрузка...</p>
-</div>
-<button class="btn btn-primary" onclick="showSection('reports')">
-Подробнее
-</button>
-</div>
-<div class="card">
-<div class="card-header">
-<div class="card-icon">🚨</div>
-<h3 class="card-title">Новые нарушения</h3>
-</div>
-<div class="card-content">
-<p id="newViolations">Загрузка...</p>
-</div>
-<button class="btn btn-danger" onclick="showSection('violations')">
-Просмотреть
-</button>
-</div>
-<div class="card">
-<div class="card-header">
-<div class="card-icon">🤖</div>
-<h3 class="card-title">Анализ ИИ</h3>
-</div>
-<div class="card-content">
-<p>Оценка достоверности: <span id="aiCredibility">—</span></p>
-<p>Обработано: <span id="aiProcessed">0</span> запросов</p>
-</div>
-<button class="btn btn-success" onclick="showSection('aiAnalysis')">
-Запустить анализ
-</button>
-</div>
-</div>
-<div class="alert alert-info">
-<strong>💡 Быстрый старт:</strong> Выберите раздел в меню слева или используйте карточки выше для навигации
-</div>
-</section>
-<!-- Подача заявления -->
-<section id="submitReport" class="content-section">
-<div class="section-header">
-<h2>📝 Подать заявление о нарушении</h2>
-<button class="btn-back" onclick="goBack()">
-← Назад
-</button>
-</div>
-<form id="reportForm" onsubmit="submitReport(event)">
-<div class="form-group">
-<label for="reportUik">Номер избирательного участка (УИК):</label>
-<input type="text" id="reportUik" class="form-control" placeholder="Например: УИК №1234" required>
-</div>
-<div class="form-group">
-<label for="reportTitle">Заголовок нарушения:</label>
-<input type="text" id="reportTitle" class="form-control" placeholder="Кратко опишите нарушение" required>
-</div>
-<div class="form-group">
-<label for="reportDescription">Подробное описание:</label>
-<textarea id="reportDescription" class="form-control"
-placeholder="Опишите ситуацию подробно: что, где, когда произошло, кто участвовал..."
-required></textarea>
-</div>
-<div class="form-group">
-<label>Прикрепите доказательства (фото/видео):</label>
-<div class="file-upload" onclick="document.getElementById('fileInput').click()">
-<input type="file" id="fileInput" multiple accept="image/*,video/*" onchange="handleFileUpload()">
-<div class="file-label">
-<span style="font-size: 48px;">📎</span>
-<span>Нажмите для загрузки файлов</span>
-<small>Максимум 5 файлов, до 10 МБ каждый</small>
-</div>
-</div>
-<div class="file-list" id="fileList"></div>
-</div>
-<div class="form-group">
-<label for="witnessContact">Контакты свидетелей (если есть):</label>
-<input type="text" id="witnessContact" class="form-control" placeholder="Телефон, email или ФИО">
-</div>
-<div style="display: flex; gap: 10px;">
-<button type="submit" class="btn btn-success">
-📤 Отправить заявление
-</button>
-<button type="button" class="btn btn-warning" onclick="goBack()">
-← Отмена
-</button>
-</div>
-</form>
-</section>
-<!-- Мои заявления -->
-<section id="myReports" class="content-section">
-<div class="section-header">
-<h2>📋 Мои заявления</h2>
-<div>
-<button class="btn-back" onclick="goBack()" style="margin-right: 10px;">
-← Назад
-</button>
-<button class="btn btn-primary" onclick="loadMyReports()">
-🔄 Обновить список
-</button>
-</div>
-</div>
-<div class="table-responsive">
-<table>
-<thead>
-<tr>
-<th>ID</th>
-<th>УИК</th>
-<th>Нарушение</th>
-<th>Дата</th>
-<th>Статус</th>
-<th>Действия</th>
-</tr>
-</thead>
-<tbody id="myReportsTable">
-<!-- Будет заполнено скриптом -->
-</tbody>
-</table>
-</div>
-</section>
-<!-- Все нарушения (только для админа) -->
-<section id="violations" class="content-section">
-<div class="section-header">
-<h2>🚨 Все нарушения</h2>
-<div>
-<button class="btn-back" onclick="goBack()" style="margin-right: 10px;">
-← Назад
-</button>
-<button class="btn btn-primary" onclick="loadViolations()">
-🔄 Обновить
-</button>
-<button class="btn btn-danger" onclick="exportViolations()">
-📤 Экспорт
-</button>
-</div>
-</div>
-<div class="table-responsive">
-<table>
-<thead>
-<tr>
-<th>ID</th>
-<th>УИК</th>
-<th>Нарушение</th>
-<th>Пользователь</th>
-<th>Дата</th>
-<th>Статус ИИ</th>
-<th>Действия</th>
-</tr>
-</thead>
-<tbody id="violationsTable">
-<!-- Будет заполнено скриптом -->
-</tbody>
-</table>
-</div>
-</section>
-<!-- Анализ ИИ -->
-<section id="aiAnalysis" class="content-section">
-<div class="section-header">
-<h2>🤖 Анализ ИИ</h2>
-<div>
-<button class="btn-back" onclick="goBack()" style="margin-right: 10px;">
-← Назад
-</button>
-<button class="btn btn-success" onclick="runAiAnalysis()">
-🔍 Запустить анализ
-</button>
-</div>
-</div>
-<div class="ai-analysis">
-<div class="ai-header">
-<div class="ai-icon">🧠</div>
-<div>
-<h3>Система оценки достоверности</h3>
-<p>ИИ анализирует текстовые описания нарушений и оценивает их достоверность</p>
-</div>
-</div>
-<div class="form-group">
-<label for="aiText">Текст для анализа:</label>
-<textarea id="aiText" class="form-control"
-placeholder="Введите описание нарушения для анализа ИИ..."
-rows="6"></textarea>
-</div>
-<div style="display: flex; gap: 10px;">
-<button class="btn btn-primary" onclick="analyzeText()">
-🤖 Проанализировать текст
-</button>
-<button class="btn btn-warning" onclick="goBack()">
-← Назад
-</button>
-</div>
-<div class="ai-result" id="aiResult" style="display: none;">
-<h4>Результат анализа:</h4>
-<div class="ai-score" id="aiScore">—</div>
-<div class="ai-feedback" id="aiFeedback"></div>
-<div style="margin-top: 20px;">
-<strong>Рекомендации:</strong>
-<p id="aiRecommendations"></p>
-</div>
-</div>
-</div>
-</section>
-<!-- Пользователи (только для админа) -->
-<section id="users" class="content-section">
-<div class="section-header">
-<h2>👥 Управление пользователями</h2>
-<div>
-<button class="btn-back" onclick="goBack()" style="margin-right: 10px;">
-← Назад
-</button>
-<button class="btn btn-success" onclick="showAddUserModal()">
-➕ Добавить пользователя
-</button>
-</div>
-</div>
-<div class="table-responsive">
-<table>
-<thead>
-<tr>
-<th>ID</th>
-<th>Имя</th>
-<th>Email</th>
-<th>Роль</th>
-<th>Дата регистрации</th>
-<th>Статус</th>
-<th>Действия</th>
-</tr>
-</thead>
-<tbody id="usersTable">
-<!-- Будет заполнено скриптом -->
-</tbody>
-</table>
-</div>
-</section>
-</main>
-</div>
-</div>
-<!-- Модальное окно авторизации -->
-<div class="modal" id="loginModal">
-<div class="modal-content">
-<div class="modal-header">
-<h2>🔐 Вход в систему</h2>
-<button class="modal-close" onclick="closeLoginModal()">×</button>
-</div>
-<form onsubmit="handleLogin(event)">
-<div class="form-group">
-<label for="loginUsername">Логин:</label>
-<input type="text" id="loginUsername" class="form-control" placeholder="Введите логин" required>
-</div>
-<div class="form-group">
-<label for="loginPassword">Пароль:</label>
-<input type="password" id="loginPassword" class="form-control" placeholder="Введите пароль" required>
-</div>
-<div style="display: flex; gap: 10px;">
-<button type="submit" class="btn btn-primary" style="flex: 1;">
-Войти
-</button>
-<button type="button" class="btn btn-warning" onclick="closeLoginModal()" style="flex: 1;">
-Отмена
-</button>
-</div>
-<div style="text-align: center; margin-top: 20px;">
-<a href="#" onclick="showRegisterModal()" style="color: #1565c0; text-decoration: none;">
-Нет аккаунта? Зарегистрироваться
-</a>
-</div>
-</form>
-</div>
-</div>
-<!-- Модальное окно регистрации -->
-<div class="modal" id="registerModal">
-<div class="modal-content">
-<div class="modal-header">
-<h2>📝 Регистрация</h2>
-<button class="modal-close" onclick="closeRegisterModal()">×</button>
-</div>
-<form onsubmit="handleRegister(event)">
-<div class="form-group">
-<label for="regName">ФИО:</label>
-<input type="text" id="regName" class="form-control" placeholder="Иванов Иван Иванович" required>
-</div>
-<div class="form-group">
-<label for="regUsername">Логин:</label>
-<input type="text" id="regUsername" class="form-control" placeholder="Придумайте логин" required>
-</div>
-<div class="form-group">
-<label for="regEmail">Email:</label>
-<input type="email" id="regEmail" class="form-control" placeholder="example@mail.ru" required>
-</div>
-<div class="form-group">
-<label for="regPassword">Пароль:</label>
-<input type="password" id="regPassword" class="form-control" placeholder="Не менее 6 символов" required>
-</div>
-<div class="form-group">
-<label for="regConfirmPassword">Подтвердите пароль:</label>
-<input type="password" id="regConfirmPassword" class="form-control" placeholder="Повторите пароль" required>
-</div>
-<div style="display: flex; gap: 10px;">
-<button type="submit" class="btn btn-success" style="flex: 1;">
-Зарегистрироваться
-</button>
-<button type="button" class="btn btn-warning" onclick="closeRegisterModal()" style="flex: 1;">
-Отмена
-</button>
-</div>
-</form>
-</div>
-</div>
-<!-- Модальное окно добавления пользователя (админ) -->
-<div class="modal" id="addUserModal">
-<div class="modal-content">
-<div class="modal-header">
-<h2>👥 Добавить пользователя</h2>
-<button class="modal-close" onclick="closeAddUserModal()">×</button>
-</div>
-<form onsubmit="handleAddUser(event)">
-<div class="form-group">
-<label for="addUserName">ФИО:</label>
-<input type="text" id="addUserName" class="form-control" required>
-</div>
-<div class="form-group">
-<label for="addUserLogin">Логин:</label>
-<input type="text" id="addUserLogin" class="form-control" required>
-</div>
-<div class="form-group">
-<label for="addUserEmail">Email:</label>
-<input type="email" id="addUserEmail" class="form-control" required>
-</div>
-<div class="form-group">
-<label for="addUserPassword">Пароль:</label>
-<input type="password" id="addUserPassword" class="form-control" required>
-</div>
-<div class="form-group">
-<label for="addUserRole">Роль:</label>
-<select id="addUserRole" class="form-control">
-<option value="observer">Наблюдатель</option>
-<option value="user">Пользователь</option>
-</select>
-</div>
-<div style="display: flex; gap: 10px;">
-<button type="submit" class="btn btn-success" style="flex: 1;">
-Добавить пользователя
-</button>
-<button type="button" class="btn btn-warning" onclick="closeAddUserModal()" style="flex: 1;">
-Отмена
-</button>
-</div>
-</form>
-</div>
-</div>
-<script>
-// Система управления пользователями
-const UserSystem = {
-currentUser: null,
-history: [], // История навигации
-// Предустановленные пользователи
-predefinedUsers: {
-'admin58': {
-id: 1,
-name: 'Администратор Системы',
-username: 'admin58',
-email: 'admin@election-control.ru',
-password: '893612',
-role: 'admin',
-createdAt: new Date().toISOString(),
-avatar: '👑'
-},
-'observer': {
-id: 2,
-name: 'Иванов Петр Сергеевич',
-username: 'observer',
-email: 'observer@mail.ru',
-password: 'observer123',
-role: 'observer',
-createdAt: new Date().toISOString(),
-avatar: '👁️'
-},
-'user': {
-id: 3,
-name: 'Сидорова Анна Викторовна',
-username: 'user',
-email: 'user@mail.ru',
-password: 'user123',
-role: 'user',
-createdAt: new Date().toISOString(),
-avatar: '👤'
-}
-},
-// Хранилище пользователей
-users: {},
-// Инициализация
-init() {
-// Загружаем предустановленных пользователей
-this.users = { ...this.predefinedUsers };
-// Загружаем сохраненных пользователей из localStorage
-const savedUsers = localStorage.getItem('election_users');
-if (savedUsers) {
-const parsedUsers = JSON.parse(savedUsers);
-Object.assign(this.users, parsedUsers);
-}
-// Загружаем текущую сессию
-const session = localStorage.getItem('election_session');
-if (session) {
-const { username, token } = JSON.parse(session);
-if (this.users[username] && this.verifyToken(username, token)) {
-this.currentUser = this.users[username];
-this.showAppInterface();
-} else {
-this.showAuthScreen();
-}
-} else {
-this.showAuthScreen();
-}
-},
-// Показать экран авторизации
-showAuthScreen() {
-document.getElementById('authScreen').classList.add('active');
-document.getElementById('header').style.display = 'none';
-document.getElementById('sidebar').style.display = 'none';
-document.querySelectorAll('.content-section').forEach(section => {
-section.classList.remove('active');
-});
-},
-// Показать интерфейс приложения
-showAppInterface() {
-document.getElementById('authScreen').classList.remove('active');
-document.getElementById('header').style.display = 'flex';
-document.getElementById('sidebar').style.display = 'block';
-this.updateUI();
-this.navigateTo('dashboard');
-},
-// Генерация токена
-generateToken(username) {
-return btoa(username + ':' + Date.now() + ':' + Math.random());
-},
-// Проверка токена
-verifyToken(username, token) {
-try {
-const decoded = atob(token).split(':');
-return decoded[0] === username;
-} catch {
-return false;
-}
-},
-// Вход в систему
-login(username, password) {
-const user = this.users[username];
-if (!user) {
-return { success: false, message: 'Пользователь не найден' };
-}
-if (user.password !== password) {
-return { success: false, message: 'Неверный пароль' };
-}
-// Генерируем токен
-const token = this.generateToken(username);
-// Сохраняем сессию
-this.currentUser = user;
-localStorage.setItem('election_session', JSON.stringify({ username, token }));
-// Показываем интерфейс приложения
-this.showAppInterface();
-return { success: true, user };
-},
-// Регистрация
-register(userData) {
-const { name, username, email, password } = userData;
-if (this.users[username]) {
-return { success: false, message: 'Пользователь с таким логином уже существует' };
-}
-// Создаем нового пользователя
-const newUser = {
-id: Date.now(),
-name,
-username,
-email,
-password,
-role: 'user', // По умолчанию обычный пользователь
-createdAt: new Date().toISOString(),
-avatar: '👤'
-};
-// Сохраняем
-this.users[username] = newUser;
-this.saveUsers();
-// Автоматически входим
-return this.login(username, password);
-},
-// Добавление пользователя (админ)
-addUser(userData) {
-const { name, username, email, password, role } = userData;
-if (this.users[username]) {
-return { success: false, message: 'Пользователь с таким логином уже существует' };
-}
-const newUser = {
-id: Date.now(),
-name,
-username,
-email,
-password,
-role: role || 'user',
-createdAt: new Date().toISOString(),
-avatar: role === 'admin' ? '👑' : role === 'observer' ? '👁️' : '👤'
-};
-this.users[username] = newUser;
-this.saveUsers();
-return { success: true, user: newUser };
-},
-// Выход
-logout() {
-this.currentUser = null;
-localStorage.removeItem('election_session');
-this.history = [];
-this.showAuthScreen();
-},
-// Сохранение пользователей
-saveUsers() {
-// Сохраняем только не предустановленных пользователей
-const usersToSave = {};
-for (const [username, user] of Object.entries(this.users)) {
-if (!this.predefinedUsers[username]) {
-usersToSave[username] = user;
-}
-}
-localStorage.setItem('election_users', JSON.stringify(usersToSave));
-},
-// Обновление UI
-updateUI() {
-const userPanel = document.getElementById('userPanel');
-const navMenu = document.getElementById('navMenu');
-if (this.currentUser) {
-// Обновляем панель пользователя
-userPanel.innerHTML = `
-<div class="user-avatar">${this.currentUser.avatar}</div>
-<div class="user-info">
-<div class="user-name">${this.currentUser.name}</div>
-<div class="user-role">${this.getRoleName(this.currentUser.role)}</div>
-<div class="control-panel">
-<button class="btn-back" onclick="UserSystem.goBack()">
-← Назад
-</button>
-<button class="btn-logout" onclick="UserSystem.logout()">
-🚪 Выйти
-</button>
-</div>
-</div>
-`;
-// Обновляем навигацию
-navMenu.innerHTML = this.generateNavigation();
-// Обновляем статистику
-updateDashboard();
-}
-},
-// Генерация названия роли
-getRoleName(role) {
-const roles = {
-'admin': 'Администратор',
-'observer': 'Наблюдатель',
-'user': 'Пользователь'
-};
-return roles[role] || role;
-},
-// Генерация меню навигации
-generateNavigation() {
-const baseMenu = `
-<li class="nav-item">
-<a href="#" class="nav-link active" onclick="UserSystem.navigateTo('dashboard')">
-<span class="nav-icon">📊</span>
-<span>Дашборд</span>
-</a>
-</li>
-<li class="nav-item">
-<a href="#" class="nav-link" onclick="UserSystem.navigateTo('submitReport')">
-<span class="nav-icon">📝</span>
-<span>Подать заявление</span>
-</a>
-</li>
-<li class="nav-item">
-<a href="#" class="nav-link" onclick="UserSystem.navigateTo('myReports')">
-<span class="nav-icon">📋</span>
-<span>Мои заявления</span>
-</a>
-</li>
-`;
-const adminMenu = `
-<li class="nav-item">
-<a href="#" class="nav-link" onclick="UserSystem.navigateTo('violations')">
-<span class="nav-icon">🚨</span>
-<span>Все нарушения</span>
-</a>
-</li>
-<li class="nav-item">
-<a href="#" class="nav-link" onclick="UserSystem.navigateTo('users')">
-<span class="nav-icon">👥</span>
-<span>Пользователи</span>
-</a>
-</li>
-`;
-const observerMenu = `
-<li class="nav-item">
-<a href="#" class="nav-link" onclick="UserSystem.navigateTo('aiAnalysis')">
-<span class="nav-icon">🤖</span>
-<span>Анализ ИИ</span>
-</a>
-</li>
-`;
-let menu = baseMenu;
-if (this.currentUser.role === 'admin') {
-menu += adminMenu + observerMenu;
-} else if (this.currentUser.role === 'observer') {
-menu += observerMenu;
-}
-return menu;
-},
-// Навигация с историей
-navigateTo(sectionId) {
-// Добавляем текущий раздел в историю
-if (this.history.length === 0 || this.history[this.history.length - 1] !== sectionId) {
-this.history.push(sectionId);
-}
-// Скрываем все секции
-document.querySelectorAll('.content-section').forEach(section => {
-section.classList.remove('active');
-});
-// Показываем нужную секцию
-document.getElementById(sectionId).classList.add('active');
-// Обновляем активную ссылку в меню
-document.querySelectorAll('.nav-link').forEach(link => {
-link.classList.remove('active');
-});
-// Находим соответствующую ссылку и делаем ее активной
-document.querySelectorAll('.nav-link').forEach(link => {
-if (link.textContent.includes(getSectionTitle(sectionId))) {
-link.classList.add('active');
-}
-});
-// Загружаем данные для секции
-switch(sectionId) {
-case 'dashboard':
-updateDashboard();
-break;
-case 'myReports':
-loadMyReports();
-break;
-case 'violations':
-if (this.currentUser.role === 'admin') {
-loadViolations();
-}
-break;
-case 'users':
-if (this.currentUser.role === 'admin') {
-loadUsers();
-}
-break;
-}
-},
-// Назад
-goBack() {
-if (this.history.length > 1) {
-this.history.pop(); // Убираем текущий раздел
-const previousSection = this.history[this.history.length - 1];
-this.navigateTo(previousSection);
-} else {
-// Если история пуста, идем на дашборд
-this.navigateTo('dashboard');
-}
-},
-// Получение всех пользователей (для админа)
-getAllUsers() {
-return Object.values(this.users);
-},
-// Получение пользователя по ID
-getUserById(id) {
-return Object.values(this.users).find(user => user.id === id);
-}
-};
-// Система управления заявлениями
-const ReportSystem = {
-reports: [],
-init() {
-const savedReports = localStorage.getItem('election_reports');
-if (savedReports) {
-this.reports = JSON.parse(savedReports);
-}
-},
-// Подача заявления
-submitReport(reportData) {
-const report = {
-id: Date.now(),
-...reportData,
-userId: UserSystem.currentUser.id,
-userName: UserSystem.currentUser.name,
-userRole: UserSystem.currentUser.role,
-status: 'new',
-createdAt: new Date().toISOString(),
-files: reportData.files || [],
-aiAnalysis: null
-};
-this.reports.push(report);
-this.saveReports();
-return { success: true, report };
-},
-// Получение заявлений пользователя
-getUserReports(userId) {
-return this.reports.filter(report => report.userId === userId)
-.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-},
-// Получение всех заявлений (для админа)
-getAllReports() {
-return this.reports.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-},
-// Получение заявления по ID
-getReportById(id) {
-return this.reports.find(report => report.id === id);
-},
-// Обновление статуса
-updateReportStatus(id, status) {
-const report = this.getReportById(id);
-if (report) {
-report.status = status;
-report.updatedAt = new Date().toISOString();
-this.saveReports();
-return true;
-}
-return false;
-},
-// Добавление AI анализа
-addAiAnalysis(id, analysis) {
-const report = this.getReportById(id);
-if (report) {
-report.aiAnalysis = analysis;
-report.updatedAt = new Date().toISOString();
-this.saveReports();
-return true;
-}
-return false;
-},
-// Сохранение
-saveReports() {
-localStorage.setItem('election_reports', JSON.stringify(this.reports));
-},
-// Получение статистики
-getStatistics() {
-const today = new Date().toDateString();
-const todayReports = this.reports.filter(r =>
-new Date(r.createdAt).toDateString() === today
-);
-return {
-total: this.reports.length,
-today: todayReports.length,
-new: this.reports.filter(r => r.status === 'new').length,
-processing: this.reports.filter(r => r.status === 'processing').length,
-resolved: this.reports.filter(r => r.status === 'resolved').length
-};
-}
-};
-// AI система анализа
-const AiSystem = {
-// Анализ текста
-analyzeText(text) {
-// Имитация работы ИИ
-const keywords = {
-'вброс': 0.9,
-'нарушение': 0.7,
-'подтасовка': 0.95,
-'давление': 0.8,
-'фальсификация': 0.9,
-'неправильно': 0.6,
-'протест': 0.5,
-'жалоба': 0.4
-};
-let score = 0.5; // Базовый балл
-let matchedKeywords = [];
-// Анализ ключевых слов
-for (const [keyword, weight] of Object.entries(keywords)) {
-if (text.toLowerCase().includes(keyword)) {
-score += weight * 0.1;
-matchedKeywords.push(keyword);
-}
-}
-// Ограничиваем балл от 0 до 1
-score = Math.min(Math.max(score, 0), 1);
-// Генерация отзыва
-const feedback = this.generateFeedback(score, matchedKeywords);
-const recommendations = this.generateRecommendations(score, matchedKeywords);
-return {
-score: Math.round(score * 100),
-feedback,
-recommendations,
-keywords: matchedKeywords,
-confidence: Math.round(score * 100)
-};
-},
-// Генерация отзыва
-generateFeedback(score, keywords) {
-if (score >= 0.8) {
-return `Высокая вероятность нарушений (${keywords.length} ключевых индикаторов обнаружено). Требуется немедленная проверка.`;
-} else if (score >= 0.6) {
-return `Средняя вероятность нарушений. Рекомендуется дополнительная проверка.`;
-} else if (score >= 0.4) {
-return `Низкая вероятность нарушений. Возможны незначительные нарушения процедуры.`;
-} else {
-return `Вероятность нарушений минимальна. Возможно, речь идет о технических вопросах или недопонимании.`;
-}
-},
-// Генерация рекомендаций
-generateRecommendations(score, keywords) {
-const recommendations = [];
-if (score >= 0.7) {
-recommendations.push('Немедленно сообщить председателю УИК');
-recommendations.push('Зафиксировать доказательства (фото/видео)');
-recommendations.push('Составить официальный акт');
-recommendations.push('Уведомить вышестоящую избирательную комиссию');
-} else if (score >= 0.5) {
-recommendations.push('Провести дополнительную проверку');
-recommendations.push('Запросить разъяснения у членов комиссии');
-recommendations.push('Зафиксировать инцидент в журнале');
-} else {
-recommendations.push('Провести разъяснительную беседу');
-recommendations.push('Уточнить детали у свидетелей');
-recommendations.push('Направить запрос в комиссию');
-}
-return recommendations.join('. ') + '.';
-},
-// Анализ всех новых заявлений
-analyzeAllNewReports() {
-const newReports = ReportSystem.reports.filter(r => !r.aiAnalysis && r.status === 'new');
-newReports.forEach(report => {
-const analysis = this.analyzeText(report.description);
-ReportSystem.addAiAnalysis(report.id, analysis);
-});
-return newReports.length;
-}
-};
-// Система управления файлами
-const FileSystem = {
-uploadedFiles: [],
-handleFileUpload() {
-const input = document.getElementById('fileInput');
-const files = Array.from(input.files);
-// Ограничение на количество файлов
-if (files.length > 5) {
-showAlert('Максимум 5 файлов!', 'warning');
-return;
-}
-// Проверка размера файлов
-for (const file of files) {
-if (file.size > 10 * 1024 * 1024) { // 10 MB
-showAlert(`Файл ${file.name} слишком большой! Максимум 10 МБ.`, 'warning');
-return;
-}
-}
-this.uploadedFiles = files;
-this.updateFileList();
-},
-updateFileList() {
-const fileList = document.getElementById('fileList');
-fileList.innerHTML = '';
-this.uploadedFiles.forEach((file, index) => {
-const item = document.createElement('div');
-item.className = 'file-item';
-item.innerHTML = `
-<div>
-<strong>${file.name}</strong>
-<br>
-<small>${(file.size / 1024).toFixed(2)} КБ</small>
-</div>
-<button onclick="FileSystem.removeFile(${index})" style="background: none; border: none; color: #c62828; cursor: pointer;">
-✕
-</button>
-`;
-fileList.appendChild(item);
-});
-},
-removeFile(index) {
-this.uploadedFiles.splice(index, 1);
-this.updateFileList();
-},
-clearFiles() {
-this.uploadedFiles = [];
-document.getElementById('fileInput').value = '';
-this.updateFileList();
-}
-};
-// Вспомогательные функции
-function getSectionTitle(sectionId) {
-const titles = {
-'dashboard': 'Дашборд',
-'submitReport': 'Подать заявление',
-'myReports': 'Мои заявления',
-'violations': 'Все нарушения',
-'aiAnalysis': 'Анализ ИИ',
-'users': 'Пользователи'
-};
-return titles[sectionId] || sectionId;
-}
-// Обработчики форм
-function handleLogin(event) {
-event.preventDefault();
-const username = document.getElementById('loginUsername').value;
-const password = document.getElementById('loginPassword').value;
-const result = UserSystem.login(username, password);
-if (result.success) {
-showAlert(`Добро пожаловать, ${result.user.name}!`, 'success');
-closeLoginModal();
-} else {
-showAlert(result.message, 'danger');
-}
-}
-function handleRegister(event) {
-event.preventDefault();
-const name = document.getElementById('regName').value;
-const username = document.getElementById('regUsername').value;
-const email = document.getElementById('regEmail').value;
-const password = document.getElementById('regPassword').value;
-const confirmPassword = document.getElementById('regConfirmPassword').value;
-if (password !== confirmPassword) {
-showAlert('Пароли не совпадают!', 'danger');
-return;
-}
-if (password.length < 6) {
-showAlert('Пароль должен быть не менее 6 символов', 'warning');
-return;
-}
-const result = UserSystem.register({ name, username, email, password });
-if (result.success) {
-showAlert('Регистрация успешна! Вы вошли в систему.', 'success');
-closeRegisterModal();
-} else {
-showAlert(result.message, 'danger');
-}
-}
-function submitReport(event) {
-event.preventDefault();
-if (!UserSystem.currentUser) {
-showAlert('Для подачи заявления необходимо войти в систему', 'warning');
-return;
-}
-const reportData = {
-uik: document.getElementById('reportUik').value,
-title: document.getElementById('reportTitle').value,
-description: document.getElementById('reportDescription').value,
-witnessContact: document.getElementById('witnessContact').value,
-files: FileSystem.uploadedFiles.map(file => ({
-name: file.name,
-size: file.size,
-type: file.type
-}))
-};
-const result = ReportSystem.submitReport(reportData);
-if (result.success) {
-showAlert(`Заявление #${result.report.id} успешно подано!`, 'success');
-// Очищаем форму
-event.target.reset();
-FileSystem.clearFiles();
-// Переходим к списку заявлений
-UserSystem.navigateTo('myReports');
-} else {
-showAlert('Ошибка при подаче заявления', 'danger');
-}
-}
-// Загрузка данных
-function loadMyReports() {
-if (!UserSystem.currentUser) return;
-const reports = ReportSystem.getUserReports(UserSystem.currentUser.id);
-const table = document.getElementById('myReportsTable');
-if (reports.length === 0) {
-table.innerHTML = `
-<tr>
-<td colspan="6" style="text-align: center; padding: 40px;">
-<div style="font-size: 48px; color: #ccc; margin-bottom: 20px;">📝</div>
-<h3>Заявлений пока нет</h3>
-<p>Подайте первое заявление о нарушении</p>
-</td>
-</tr>
-`;
-return;
-}
-table.innerHTML = reports.map(report => `
-<tr>
-<td>#${report.id}</td>
-<td>${report.uik}</td>
-<td>${report.title}</td>
-<td>${new Date(report.createdAt).toLocaleDateString()}</td>
-<td>
-<span class="status-badge status-${report.status}">
-${getStatusText(report.status)}
-</span>
-</td>
-<td>
-<button onclick="viewReport(${report.id})" style="background: none; border: none; color: #1565c0; cursor: pointer; margin-right: 10px;">
-👁️ Просмотр
-</button>
-</td>
-</tr>
-`).join('');
-}
-function loadViolations() {
-if (!UserSystem.currentUser || UserSystem.currentUser.role !== 'admin') return;
-const reports = ReportSystem.getAllReports();
-const table = document.getElementById('violationsTable');
-table.innerHTML = reports.map(report => `
-<tr>
-<td>#${report.id}</td>
-<td>${report.uik}</td>
-<td>${report.title}</td>
-<td>${report.userName}</td>
-<td>${new Date(report.createdAt).toLocaleDateString()}</td>
-<td>
-${report.aiAnalysis ?
-`<span style="color: ${report.aiAnalysis.score >= 70 ? '#c62828' : report.aiAnalysis.score >= 40 ? '#f57c00' : '#2e7d32'}">
-${report.aiAnalysis.score}%
-</span>` :
-'—'
-}
-</td>
-<td>
-<button onclick="viewReport(${report.id})" style="background: none; border: none; color: #1565c0; cursor: pointer; margin-right: 10px;">
-👁️
-</button>
-<button onclick="analyzeReport(${report.id})" style="background: none; border: none; color: #f57c00; cursor: pointer; margin-right: 10px;">
-🤖
-</button>
-<button onclick="updateReportStatus(${report.id}, 'processing')" style="background: none; border: none; color: #2e7d32; cursor: pointer;">
-✅
-</button>
-</td>
-</tr>
-`).join('');
-}
-function loadUsers() {
-if (!UserSystem.currentUser || UserSystem.currentUser.role !== 'admin') return;
-const users = UserSystem.getAllUsers();
-const table = document.getElementById('usersTable');
-table.innerHTML = users.map(user => `
-<tr>
-<td>${user.id}</td>
-<td>
-<div style="display: flex; align-items: center; gap: 10px;">
-<div style="font-size: 20px;">${user.avatar}</div>
-<div>
-<div>${user.name}</div>
-<small>@${user.username}</small>
-</div>
-</div>
-</td>
-<td>${user.email}</td>
-<td>${UserSystem.getRoleName(user.role)}</td>
-<td>${new Date(user.createdAt).toLocaleDateString()}</td>
-<td>
-<span class="status-badge status-new">
-Активен
-</span>
-</td>
-<td>
-${user.username !== UserSystem.currentUser.username ? `
-<button onclick="deleteUser(${user.id})" style="background: none; border: none; color: #c62828; cursor: pointer;">
-🗑️
-</button>
-` : ''}
-</td>
-</tr>
-`).join('');
-}
-// Вспомогательные функции
-function getStatusText(status) {
-const statuses = {
-'new': 'Новое',
-'processing': 'В обработке',
-'resolved': 'Решено'
-};
-return statuses[status] || status;
-}
-function showAlert(message, type = 'info') {
-const alertDiv = document.createElement('div');
-alertDiv.className = `alert alert-${type}`;
-alertDiv.innerHTML = message;
-alertDiv.style.cssText = `
-position: fixed;
-top: 20px;
-right: 20px;
-z-index: 1000;
-max-width: 400px;
-animation: slideIn 0.3s ease-out;
-`;
-document.body.appendChild(alertDiv);
-setTimeout(() => {
-alertDiv.style.animation = 'slideIn 0.3s ease-out reverse';
-setTimeout(() => {
-document.body.removeChild(alertDiv);
-}, 300);
-}, 5000);
-}
-function updateDashboard() {
-const stats = ReportSystem.getStatistics();
-document.getElementById('totalViolations').textContent = stats.total;
-document.getElementById('totalReports').textContent = stats.total;
-document.getElementById('totalUsers').textContent = UserSystem.getAllUsers().length;
-document.getElementById('todayActivity').textContent = `Сегодня подано: ${stats.today} заявлений`;
-document.getElementById('newViolations').textContent = `Новых: ${stats.new}, в обработке: ${stats.processing}`;
-// Обновляем AI статистику
-const analyzedReports = ReportSystem.reports.filter(r => r.aiAnalysis).length;
-document.getElementById('aiProcessed').textContent = analyzedReports;
-if (analyzedReports > 0) {
-const avgScore = Math.round(
-ReportSystem.reports
-.filter(r => r.aiAnalysis)
-.reduce((sum, r) => sum + r.aiAnalysis.score, 0) / analyzedReports
-);
-document.getElementById('aiCredibility').textContent = `${avgScore}%`;
-}
-}
-function refreshDashboard() {
-updateDashboard();
-showAlert('Дашборд обновлен', 'success');
-}
-// Глобальные функции навигации для кнопок
-function showSection(sectionId) {
-UserSystem.navigateTo(sectionId);
-}
-function goBack() {
-UserSystem.goBack();
-}
-// Модальные окна
-function showLoginModal() {
-document.getElementById('loginModal').classList.add('active');
-}
-function closeLoginModal() {
-document.getElementById('loginModal').classList.remove('active');
-}
-function showRegisterModal() {
-document.getElementById('registerModal').classList.add('active');
-}
-function closeRegisterModal() {
-document.getElementById('registerModal').classList.remove('active');
-}
-function showAddUserModal() {
-document.getElementById('addUserModal').classList.add('active');
-}
-function closeAddUserModal() {
-document.getElementById('addUserModal').classList.remove('active');
-}
-function handleAddUser(event) {
-event.preventDefault();
-const userData = {
-name: document.getElementById('addUserName').value,
-username: document.getElementById('addUserLogin').value,
-email: document.getElementById('addUserEmail').value,
-password: document.getElementById('addUserPassword').value,
-role: document.getElementById('addUserRole').value
-};
-const result = UserSystem.addUser(userData);
-if (result.success) {
-showAlert(`Пользователь ${result.user.name} добавлен`, 'success');
-closeAddUserModal();
-loadUsers();
-updateDashboard();
-} else {
-showAlert(result.message, 'danger');
-}
-}
-// Демо-режим
-function enterDemoMode() {
-// Автоматически входим как наблюдатель для демо
-const result = UserSystem.login('observer', 'observer123');
-if (result.success) {
-showAlert('Демо-режим активирован. Используется учетная запись наблюдателя.', 'info');
-}
-}
-// AI функции
-function analyzeText() {
-const text = document.getElementById('aiText').value;
-if (!text.trim()) {
-showAlert('Введите текст для анализа', 'warning');
-return;
-}
-const analysis = AiSystem.analyzeText(text);
-document.getElementById('aiScore').textContent = `${analysis.score}%`;
-document.getElementById('aiFeedback').textContent = analysis.feedback;
-document.getElementById('aiRecommendations').textContent = analysis.recommendations;
-document.getElementById('aiResult').style.display = 'block';
-showAlert(`Анализ завершен. Достоверность: ${analysis.score}%`, 'success');
-}
-function analyzeReport(reportId) {
-const report = ReportSystem.getReportById(reportId);
-if (!report) return;
-const analysis = AiSystem.analyzeText(report.description);
-ReportSystem.addAiAnalysis(reportId, analysis);
-showAlert(`Отчет #${reportId} проанализирован ИИ. Оценка: ${analysis.score}%`, 'success');
-loadViolations();
-}
-function runAiAnalysis() {
-const count = AiSystem.analyzeAllNewReports();
-showAlert(`ИИ проанализировал ${count} новых заявлений`, 'success');
-updateDashboard();
-}
-// Дополнительные функции
-function viewReport(reportId) {
-const report = ReportSystem.getReportById(reportId);
-if (!report) return;
-const modalContent = `
-<div class="modal-header">
-<h2>Заявление #${report.id}</h2>
-<button class="modal-close" onclick="this.closest('.modal').classList.remove('active')">×</button>
-</div>
-<div style="max-height: 60vh; overflow-y: auto;">
-<div style="margin-bottom: 20px;">
-<strong>УИК:</strong> ${report.uik}<br>
-<strong>Статус:</strong> ${getStatusText(report.status)}<br>
-<strong>Подано:</strong> ${new Date(report.createdAt).toLocaleString()}<br>
-<strong>Пользователь:</strong> ${report.userName}
-</div>
-<div style="margin: 20px 0; padding: 20px; background: #f8f9fa; border-radius: 10px;">
-<h3>${report.title}</h3>
-<p style="white-space: pre-wrap; margin-top: 10px;">${report.description}</p>
-</div>
-${report.files.length > 0 ? `
-<div style="margin: 20px 0;">
-<h4>Прикрепленные файлы (${report.files.length}):</h4>
-<div style="display: flex; gap: 10px; flex-wrap: wrap;">
-${report.files.map(file => `
-<div style="padding: 10px; background: white; border: 1px solid #ddd; border-radius: 8px;">
-📎 ${file.name}<br>
-<small>${(file.size / 1024).toFixed(2)} КБ</small>
-</div>
-`).join('')}
-</div>
-</div>
-` : ''}
-${report.aiAnalysis ? `
-<div style="margin: 20px 0; padding: 20px; background: linear-gradient(135deg, #e3f2fd, #f3e5f5); border-radius: 10px;">
-<h4>🤖 Анализ ИИ</h4>
-<div style="text-align: center; font-size: 48px; font-weight: bold; color: ${report.aiAnalysis.score >= 70 ? '#c62828' : report report.aiAnalysis.score >= 40 ? '#f57c00' : '#2e7d32'};">
-${report.aiAnalysis.score}%
-</div>
-<p><strong>Оценка:</strong> ${report.aiAnalysis.feedback}</p>
-<p><strong>Рекомендации:</strong> ${report.aiAnalysis.recommendations}</p>
-</div>
-` : ''}
-</div>
-<div style="margin-top: 20px; display: flex; gap: 10px;">
-${UserSystem.currentUser.role === 'admin' ? `
-<button class="btn btn-primary" onclick="analyzeReport(${report.id}); this.closest('.modal').classList.remove('active')">
-🤖 Запустить ИИ анализ
-</button>
-<button class="btn btn-success" onclick="updateReportStatus(${report.id}, 'resolved'); this.closest('.modal').classList.remove('active')">
-✅ Пометить решенным
-</button>
-` : ''}
-<button class="btn btn-warning" onclick="this.closest('.modal').classList.remove('active')" style="flex: 1;">
-Закрыть
-</button>
-</div>
-`;
-const modal = document.createElement('div');
-modal.className = 'modal active';
-modal.innerHTML = `
-<div class="modal-content" style="max-width: 800px;">
-${modalContent}
-</div>
-`;
-document.body.appendChild(modal);
-// Закрытие по клику вне модалки
-modal.addEventListener('click', (e) => {
-if (e.target === modal) {
-document.body.removeChild(modal);
-}
-});
-}
-function updateReportStatus(reportId, status) {
-if (ReportSystem.updateReportStatus(reportId, status)) {
-showAlert(`Статус заявления #${reportId} обновлен`, 'success');
-loadViolations();
-loadMyReports();
-}
-}
-function exportViolations() {
-if (!UserSystem.currentUser || UserSystem.currentUser.role !== 'admin') {
-showAlert('Доступ запрещен', 'danger');
-return;
-}
-const reports = ReportSystem.getAllReports();
-const data = {
-exportedAt: new Date().toISOString(),
-exportedBy: UserSystem.currentUser.name,
-totalReports: reports.length,
-reports: reports
-};
-const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-const url = URL.createObjectURL(blob);
-const a = document.createElement('a');
-a.href = url;
-a.download = `нарушения_${new Date().toISOString().split('T')[0]}.json`;
-document.body.appendChild(a);
-a.click();
-document.body.removeChild(a);
-URL.revokeObjectURL(url);
-showAlert('Данные экспортированы в JSON файл', 'success');
-}
-function deleteUser(userId) {
-if (!UserSystem.currentUser || UserSystem.currentUser.role !== 'admin') {
-showAlert('Доступ запрещен', 'danger');
-return;
-}
-if (!confirm('Вы уверены, что хотите удалить этого пользователя?')) return;
-const users = UserSystem.getAllUsers();
-const userToDelete = users.find(u => u.id === userId);
-if (!userToDelete) return;
-// Не позволяем удалить себя
-if (userToDelete.username === UserSystem.currentUser.username) {
-showAlert('Нельзя удалить самого себя!', 'danger');
-return;
-}
-// Не позволяем удалить предустановленных пользователей
-if (UserSystem.predefinedUsers[userToDelete.username]) {
-showAlert('Нельзя удалить системного пользователя!', 'danger');
-return;
-}
-// Удаляем из системы
-delete UserSystem.users[userToDelete.username];
-UserSystem.saveUsers();
-showAlert(`Пользователь ${userToDelete.name} удален`, 'success');
-loadUsers();
-updateDashboard();
-}
-// Обработчики файлов
-function handleFileUpload() {
-FileSystem.handleFileUpload();
-}
-// Инициализация
-document.addEventListener('DOMContentLoaded', function() {
-// Инициализируем системы
-UserSystem.init();
-ReportSystem.init();
-// Добавляем обработчик файлов
-const fileInput = document.getElementById('fileInput');
-if (fileInput) {
-fileInput.addEventListener('change', handleFileUpload);
-}
-// Добавляем горячие клавиши
-document.addEventListener('keydown', function(e) {
-// Esc для закрытия модалок
-if (e.key === 'Escape') {
-document.querySelectorAll('.modal.active').forEach(modal => {
-modal.classList.remove('active');
-});
-}
-// Alt+Left для возврата назад
-if (e.altKey && e.key === 'ArrowLeft') {
-e.preventDefault();
-goBack();
-}
-// Ctrl+Enter для быстрой отправки форм
-if (e.ctrlKey && e.key === 'Enter') {
-const activeModal = document.querySelector('.modal.active');
-if (activeModal) {
-const form = activeModal.querySelector('form');
-if (form) {
-form.requestSubmit();
-}
-}
-}
-});
-// Автоматически фокусируемся на поле логина при открытии модалки
-document.getElementById('loginModal').addEventListener('shown', function() {
-document.getElementById('loginUsername').focus();
-});
-// Обработчик для кнопки демо-режима на главном экране
-const demoBtn = document.querySelector('.btn-warning');
-if (demoBtn) {
-demoBtn.onclick = enterDemoMode;
-}
-console.log('Система верификации выборов инициализирована');
-// Загружаем тестовые данные для демонстрации
-setTimeout(() => {
-if (UserSystem.currentUser) {
-// Если пользователь авторизован, обновляем дашборд
-updateDashboard();
-// Добавляем несколько тестовых заявлений для демо
-if (ReportSystem.reports.length === 0) {
-addSampleReports();
-}
-}
-}, 1000);
-});
-// Добавление тестовых данных
-function addSampleReports() {
-const sampleReports = [
-{
-uik: 'УИК №1234',
-title: 'Вброс бюллетеней в урну',
-description: 'Примерно в 14:30 неизвестный мужчина в черной куртке опустил несколько сложенных листов в урну для голосования. Члены комиссии не отреагировали.',
-witnessContact: 'Свидетель: Петров И.С., тел. 8-900-123-45-67'
-},
-{
-uik: 'УИК №5678',
-title: 'Нарушение тайны голосования',
-description: 'Избиратель фотографировал свой бюллетень в кабине для голосования. Член комиссии сделал замечание, но не принял мер.',
-witnessContact: ''
-},
-{
-uik: 'УИК №9012',
-title: 'Давление на наблюдателя',
-description: 'Председатель УИК требовал от наблюдателя покинуть помещение без оснований. Угрожал вызвать полицию.',
-witnessContact: 'Наблюдатель: Сидорова А.В., тел. 8-900-987-65-43'
-}
-];
-sampleReports.forEach((report, index) => {
-setTimeout(() => {
-const reportData = {
-...report,
-userId: 3, // ID пользователя user
-userName: 'Сидорова Анна Викторовна',
-userRole: 'user',
-status: index === 0 ? 'processing' : 'new',
-createdAt: new Date(Date.now() - (index * 3600000)).toISOString(), // Разное время
-files: [],
-aiAnalysis: index === 0 ? AiSystem.analyzeText(report.description) : null
-};
-ReportSystem.reports.push({
-id: Date.now() + index,
-...reportData
-});
-if (index === sampleReports.length - 1) {
-ReportSystem.saveReports();
-updateDashboard();
-if (UserSystem.currentUser && UserSystem.currentUser.role === 'admin') {
-loadViolations();
-}
-if (UserSystem.currentUser && UserSystem.currentUser.id === 3) {
-loadMyReports();
-}
-}
-}, index * 100);
-});
-}
-// Показать секцию (для совместимости со старым кодом)
-function showSection(sectionId) {
-UserSystem.navigateTo(sectionId);
-}
-// Перезагрузка страницы (кнопка возврата на главный экран)
-function goToMainScreen() {
-UserSystem.showAuthScreen();
-}
-// Переключение пользователей (для демонстрации)
-function switchUser(username) {
-let password;
-switch(username) {
-case 'admin58':
-password = '893612';
-break;
-case 'observer':
-password = 'observer123';
-break;
-case 'user':
-password = 'user123';
-break;
-default:
-return;
-}
-const result = UserSystem.login(username, password);
-if (result.success) {
-showAlert(`Переключен на пользователя: ${result.user.name}`, 'success');
-}
-}
-// Быстрый доступ к функциям для кнопок в интерфейсе
-window.UserSystem = UserSystem;
-window.ReportSystem = ReportSystem;
-window.AiSystem = AiSystem;
-window.FileSystem = FileSystem;
-// Экспорт функций для глобального доступа
-window.showSection = showSection;
-window.goBack = goBack;
-window.showLoginModal = showLoginModal;
-window.closeLoginModal = closeLoginModal;
-window.showRegisterModal = showRegisterModal;
-window.closeRegisterModal = closeRegisterModal;
-window.handleLogin = handleLogin;
-window.handleRegister = handleRegister;
-window.enterDemoMode = enterDemoMode;
-window.submitReport = submitReport;
-window.loadMyReports = loadMyReports;
-window.loadViolations = loadViolations;
-window.loadUsers = loadUsers;
-window.viewReport = viewReport;
-window.analyzeReport = analyzeReport;
-window.analyzeText = analyzeText;
-window.runAiAnalysis = runAiAnalysis;
-window.updateReportStatus = updateReportStatus;
-window.exportViolations = exportViolations;
-window.deleteUser = deleteUser;
-window.showAddUserModal = showAddUserModal;
-window.closeAddUserModal = closeAddUserModal;
-window.handleAddUser = handleAddUser;
-window.handleFileUpload = handleFileUpload;
-window.refreshDashboard = refreshDashboard;
-</script>
+    <!-- Главный экран -->
+    <div class="container" id="mainScreen">
+        <div class="header">
+            <div style="font-size: 48px; margin-bottom: 10px;">🎯</div>
+            <h1>Система верификации выборов</h1>
+            <p class="description">
+                Цифровая платформа для общественного контроля за выборами. 
+                Подавайте заявления о нарушениях, анализируйте их с помощью ИИ.
+            </p>
+        </div>
+        
+        <button class="btn btn-login" id="loginBtn">
+            🔐 Войти в систему
+        </button>
+        
+        <button class="btn btn-register" id="registerBtn">
+            📝 Зарегистрироваться
+        </button>
+        
+        <button class="btn btn-demo" id="demoBtn">
+            🚀 Демо-режим
+        </button>
+        
+        <div class="demo-box">
+            <h3>📋 Демо-доступ:</h3>
+            
+            <div class="user-account">
+                <strong>👑 Администратор:</strong><br>
+                Логин: <code>admin58</code><br>
+                Пароль: <code>893612</code>
+            </div>
+            
+            <div class="user-account">
+                <strong>👁️ Наблюдатель:</strong><br>
+                Логин: <code>observer</code><br>
+                Пароль: <code>observer123</code>
+            </div>
+            
+            <div class="user-account">
+                <strong>👤 Пользователь:</strong><br>
+                Логин: <code>user</code><br>
+                Пароль: <code>user123</code>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно входа -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 20px; color: #1a237e;">🔐 Вход в систему</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="Логин" id="username" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" class="form-control" placeholder="Пароль" id="password" required>
+                </div>
+                <button type="submit" class="btn btn-login" style="margin-top: 10px;">
+                    Войти
+                </button>
+                <button type="button" class="btn" onclick="closeModal('loginModal')" 
+                        style="background: #666; color: white; margin-top: 10px;">
+                    Отмена
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Панель администратора -->
+    <div class="container" id="adminPanel" style="display: none;">
+        <div class="header">
+            <div style="font-size: 48px; color: #1a237e;">👑</div>
+            <h1>Панель Администратора</h1>
+            <p class="description">Добро пожаловать, Администратор!</p>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+            <h3>Доступные функции:</h3>
+            <ul style="margin: 15px 0; padding-left: 20px;">
+                <li>Управление пользователями</li>
+                <li>Просмотр всех нарушений</li>
+                <li>Анализ отчетов</li>
+                <li>Системные настройки</li>
+            </ul>
+        </div>
+        
+        <button class="btn btn-login" onclick="logout()">
+            ← Выйти из системы
+        </button>
+    </div>
+
+    <!-- Панель наблюдателя -->
+    <div class="container" id="observerPanel" style="display: none;">
+        <div class="header">
+            <div style="font-size: 48px; color: #1a237e;">👁️</div>
+            <h1>Панель Наблюдателя</h1>
+            <p class="description">Добро пожаловать, Наблюдатель!</p>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+            <h3>Доступные функции:</h3>
+            <ul style="margin: 15px 0; padding-left: 20px;">
+                <li>Подача заявлений о нарушениях</li>
+                <li>Анализ ИИ</li>
+                <li>Просмотр статистики</li>
+                <li>Отчеты о проверках</li>
+            </ul>
+        </div>
+        
+        <button class="btn btn-login" onclick="logout()">
+            ← Выйти из системы
+        </button>
+    </div>
+
+    <script>
+        // Данные пользователей
+        const users = {
+            'admin58': {
+                name: 'Администратор',
+                password: '893612',
+                role: 'admin',
+                panel: 'adminPanel'
+            },
+            'observer': {
+                name: 'Наблюдатель',
+                password: 'observer123',
+                role: 'observer',
+                panel: 'observerPanel'
+            },
+            'user': {
+                name: 'Пользователь',
+                password: 'user123',
+                role: 'user',
+                panel: 'observerPanel' // У пользователя та же панель, что у наблюдателя
+            }
+        };
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            // Назначаем обработчики кнопок
+            document.getElementById('loginBtn').onclick = function() {
+                document.getElementById('loginModal').style.display = 'flex';
+            };
+            
+            document.getElementById('registerBtn').onclick = function() {
+                alert('📝 Регистрация временно отключена. Используйте демо-доступы.');
+            };
+            
+            document.getElementById('demoBtn').onclick = function() {
+                // Автоматический вход как наблюдатель в демо-режиме
+                showPanel('observerPanel');
+            };
+            
+            // Обработка формы входа
+            document.getElementById('loginForm').onsubmit = function(e) {
+                e.preventDefault();
+                loginUser();
+                return false;
+            };
+            
+            // Закрытие модалки по клику вне
+            document.getElementById('loginModal').onclick = function(e) {
+                if (e.target === this) {
+                    closeModal('loginModal');
+                }
+            };
+        });
+
+        // Функция входа
+        function loginUser() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (users[username] && users[username].password === password) {
+                alert('✅ Вход выполнен! Добро пожаловать, ' + users[username].name + '!');
+                closeModal('loginModal');
+                showPanel(users[username].panel);
+            } else {
+                alert('❌ Неверный логин или пароль!');
+            }
+        }
+
+        // Показать панель
+        function showPanel(panelId) {
+            // Скрываем все контейнеры
+            document.getElementById('mainScreen').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'none';
+            document.getElementById('observerPanel').style.display = 'none';
+            
+            // Показываем нужную панель
+            document.getElementById(panelId).style.display = 'block';
+        }
+
+        // Закрыть модальное окно
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        }
+
+        // Выход из системы
+        function logout() {
+            // Скрываем все панели
+            document.getElementById('adminPanel').style.display = 'none';
+            document.getElementById('observerPanel').style.display = 'none';
+            
+            // Показываем главный экран
+            document.getElementById('mainScreen').style.display = 'block';
+            
+            alert('Вы вышли из системы');
+        }
+
+        // Глобальные функции для onclick атрибутов
+        window.closeModal = closeModal;
+        window.logout = logout;
+    </script>
 </body>
 </html>
-
