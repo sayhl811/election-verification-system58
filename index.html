@@ -362,3 +362,26 @@
     </script>
 </body>
 </html>
+// Добавьте эту функцию в основной скрипт index.html:
+
+function showAdvancedSystem() {
+    if (confirm('Перейти в расширенную систему с полным функционалом?')) {
+        window.location.href = 'advanced-system.html';
+    }
+}
+
+// И добавьте кнопку в интерфейс (в showAppInterface функцию):
+
+function showAppInterface() {
+    // ... существующий код ...
+    
+    // Добавьте эту кнопку в панель администратора/наблюдателя:
+    const advancedBtn = document.createElement('button');
+    advancedBtn.className = 'btn btn-warning';
+    advancedBtn.innerHTML = '🚀 Расширенная система';
+    advancedBtn.onclick = showAdvancedSystem;
+    advancedBtn.style.marginTop = '10px';
+    
+    // Добавьте кнопку в контейнер
+    document.querySelector('.container').appendChild(advancedBtn);
+}
